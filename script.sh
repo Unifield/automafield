@@ -137,11 +137,11 @@ pct_download() {
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
 
     then
-        POSTGRE_USERNAME=unifield_dev
-        POSTGRE_PASSWORD=unifield_dev
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     else
-        POSTGRE_USERNAME=openpg
-        POSTGRE_PASSWORD=4Unifieldpg
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     fi
 
     export PGPASSWORD=$POSTGRE_PASSWORD
@@ -171,8 +171,8 @@ setup_lettuce()
         POSTGRE_USERNAME=unifield_dev
         POSTGRE_PASSWORD=unifield_dev
     else
-        POSTGRE_USERNAME=openpg
-        POSTGRE_PASSWORD=4Unifieldpg
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     fi
 
     PORT=$NORMALPORT
@@ -439,8 +439,8 @@ pct_sqldump()
         POSTGRE_USERNAME=unifield_dev
         POSTGRE_PASSWORD=unifield_dev
     else
-        POSTGRE_USERNAME=openpg
-        POSTGRE_PASSWORD=4Unifieldpg
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     fi
 
     export PGPASSWORD=$POSTGRE_PASSWORD
@@ -491,8 +491,8 @@ pct()
         POSTGRE_USERNAME=unifield_dev
         POSTGRE_PASSWORD=unifield_dev
     else
-        POSTGRE_USERNAME=openpg
-        POSTGRE_PASSWORD=4Unifieldpg
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     fi
 
     export PGPASSWORD=$POSTGRE_PASSWORD
@@ -587,8 +587,8 @@ pct_restore()
         POSTGRE_USERNAME=unifield_dev
         POSTGRE_PASSWORD=unifield_dev
     else
-        POSTGRE_USERNAME=openpg
-        POSTGRE_PASSWORD=4Unifieldpg
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     fi
 
     PORT=$NORMALPORT
@@ -748,8 +748,8 @@ pct_dump()
         POSTGRE_USERNAME=unifield_dev
         POSTGRE_PASSWORD=unifield_dev
     else
-        POSTGRE_USERNAME=openpg
-        POSTGRE_PASSWORD=4Unifieldpg
+        POSTGRE_USERNAME=unifield
+        POSTGRE_PASSWORD=unifield
     fi
 
     PORT=$NORMALPORT
