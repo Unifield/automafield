@@ -1,0 +1,14 @@
+argcomplete==1.1.0
+argparse==1.2.1
+distribute==0.6.24
+ecdsa==0.13
+lxml==3.5.0
+paramiko==1.16.0
+pycrypto==2.6.1
+pycurl==7.43.0
+pyliblzma==0.5.3
+pylzma==0.4.8
+scp==0.10.2
+webdavclient==1.0.5
+easywebdav
+wsgiref==0.1.2

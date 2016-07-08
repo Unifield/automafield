@@ -1,0 +1,53 @@
+Feature: Patch an instance
+
+@it @patch
+Scenario: I add a patch in the sync server and I fetch it on one instance
+    I wait "1" seconds
+    Given I log into instance "{%LETTUCE_SYNC_SERVER%}"  
+    And I open tab menu "ADMINISTRATION"
+    I click on menu "Manage Unifield Version" and open the window
+
+    I fill "Revision" with "{%LETTUCE_REVISION%}"
+    I fill "Importance Flag" with "Required"
+    I fill "Comment" with "{%LETTUCE_REVISION%}"
+    I click on "add attachment"
+    I fill "Patch" with "file"
+    I click on "Add Revision"
+
+    I click "Activate" on line:
+        | STATE |
+        | Draft |
+    I close the window
+    I log out
+
+    I synchronize "{%LETTUCE_DATABASE%}"
+
+    I log into instance "{%LETTUCE_DATABASE%}"
+
+    And I open tab menu "SYNCHRONIZATION"
+    I open accordion menu "Patch Synchronization"
+    I click on menu "Upgrade" and open the window
+    I click on "Download"
+    I click on "Upgrade" and close the window
+    I log out
+
+    I wait "10" seconds
+
+    I log into instance "{%LETTUCE_DATABASE%}"
+
+    I log out
+    Given I log into instance "{%LETTUCE_SYNC_SERVER%}"  
+    And I open tab menu "ADMINISTRATION"
+    I open accordion menu "Modules"
+	I click on menu "Modules"
+	I fill "Name" with "base"
+	I click on "Search"
+	I click "Schedule Upgrade" on line:
+		| Name |
+		| base |	
+	I click on menu "Apply Scheduled Upgrades" and open the window
+	I click on "Start update"
+	I click on "Cancel" and close the window
+	
+	I log out
+
