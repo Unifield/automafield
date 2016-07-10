@@ -16,11 +16,9 @@ Then you have to edit $HOME/automafield/config.sh as follows:
 * ENV4SYNC
 * NORMALPORT
 * MYPORT
-
 * MY_LOGIN_OWNCLOUD
 * MY_PASSWORD_OWNCLOUD
 * MYHWID
-
 * LOGIN_BACKUPS
 * PASSWORD_BACKUPS
 * URL_BACKUPS
