@@ -154,7 +154,7 @@ pct_download() {
     PREVIOUS=$PWD
     cd $LOCALENV
 
-    python insert_db.py "$HWID" "$POSTGRE_USERNAME" "$POSTGRE_PASSWORD" "$PORT" "$1" "$BACKUPDIR" "$LOGIN" "$PASSWORD" ${@:3}
+    python insert_db.py "$HWID" "$POSTGRE_USERNAME" "$POSTGRE_PASSWORD" "$PORT" "$1" "$BACKUPDIR" "$LOGIN" "$PASSWORD" "$LOGIN_BACKUPS" "$PASSWORD_BACKUPS" "$URL_BACKUPS" ${@:3}
 
     cd $PREVIOUS
 
