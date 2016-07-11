@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. $SCRIPTS/config.sh
+. $HOME/automafield/config.sh
 
 _contains_element () {
     local e
