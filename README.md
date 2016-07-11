@@ -19,9 +19,10 @@ pip install virtualenv --upgrade
 ```
 Then:
 ```
+cd $HOME
+virtualenv myenv_automafield
+source myenv_automafield/bin/activate
 cd automafield
-virtualenv myenv
-source myenv/bin/activate
 pip install -r requirements.txt
 ```
 
