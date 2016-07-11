@@ -1,0 +1,6 @@
+scp==0.10.2
+selenium==2.53.1
+OERPLib==0.8.4
+Pillow==3.2.0
+psycopg2==2.6.1
+lettuce==0.2.21
