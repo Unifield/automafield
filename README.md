@@ -10,7 +10,7 @@ A few commands are provided to manage these databases (restore, dump, synchroniz
 cd $HOME
 git clone https://github.com/hectord/automafield.git
 echo source $HOME/automafield/script.sh >> ~/.bashrc
-cp automafield/config.s $HOME/.automafield.config.sh
+cp automafield/config.sh $HOME/.automafield.config.sh
 ```
 
 Then you have to set up an environment where the code will be executed. You might have to upgrade your virtualenv before that:
