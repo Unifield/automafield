@@ -10,13 +10,14 @@ A few commands are provided to manage these databases (restore, dump, synchroniz
 cd $HOME
 git clone https://github.com/hectord/automafield.git
 echo source $HOME/automafield/scripts.sh >> ~/.bashrc
+cp automafield/config.s $HOME/.automafield.config.sh
 ```
 
 Then you have to set up an environment where the code will be executed. You might have to upgrade your virtualenv before that:
 ```
 pip install virtualenv --upgrade
 ```
-Then
+Then:
 ```
 cd automafield
 virtualenv myenv
@@ -24,8 +25,7 @@ source myenv/bin/activate
 pip install -r requirements.txt
 ```
 
-
-Then you have to edit $HOME/automafield/config.sh as follows:
+Then you have to edit $HOME/.automafield.config.sh as follows:
 * ENV4SYNC
 * NORMALPORT
 * MYPORT
@@ -43,3 +43,5 @@ cd $HOME
 rm -rf automafield
 git clone https://github.com/hectord/automafield.git
 ```
+
+**Please do not update testfield if you're using it.**
