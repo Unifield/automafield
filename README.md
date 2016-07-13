@@ -6,6 +6,14 @@ A few commands are provided to manage these databases (restore, dump, synchroniz
 
 ## How to install it
 
+Before installing automafield itself and building the Python environment for it, you need the following tools:
+* git
+* python-pip
+* postgresql-server-dev-all postgresql-client
+* libjpeg-dev
+
+You can use the package management system from your linux distribution.
+
 ```
 cd $HOME
 git clone https://github.com/hectord/automafield.git
@@ -36,6 +44,15 @@ Then you have to edit $HOME/.automafield.config.sh as follows:
 * **URL_BACKUPS**: the URL where we can fetch the last version of the SYNC_SERVER (SCP)
 * **LOGIN_BACKUPS**: the login we use to fetch the backup
 * **PASSWORD_BACKUPS**: the password we use to fetch the backup
+
+Having done that, you have to set the IP address of your instances. They all have to start with "ct". You can do that in your host file (`/etc/hosts`) like that:
+```
+127.0.0.1 ct0
+192.168.1.1 ct1 
+192.168.1.2 ct2 
+```
+
+We set ct0 as the localhost by convention.
 
 ## How to update it
 
