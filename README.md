@@ -27,15 +27,15 @@ pip install -r requirements.txt
 ```
 
 Then you have to edit $HOME/.automafield.config.sh as follows:
-* ENV4SYNC
-* NORMALPORT
-* MYPORT
-* MY_LOGIN_OWNCLOUD
-* MY_PASSWORD_OWNCLOUD
-* MYHWID
-* LOGIN_BACKUPS
-* PASSWORD_BACKUPS
-* URL_BACKUPS
+* **ENV4SYNC**: the python environment in which you've installed all the libraries (it's located in $HOME/myenv_automafield/bin/activate according to the procedure above)
+* **NORMALPORT**: the PostgreSQL port in use (most of the time: 5432)
+* **MYPORT**: the PostgreSQL port in use on your own computer (most of the time: 5432)
+* **MY_LOGIN_OWNCLOUD**: your login on OwnCloud
+* **MY_PASSWORD_OWNCLOUD**: your password on OwnCloud
+* **MYHWID**: you instance's hardware ID
+* **URL_BACKUPS**: the URL where we can fetch the last version of the SYNC_SERVER (SCP)
+* **LOGIN_BACKUPS**: the login we use to fetch the backup
+* **PASSWORD_BACKUPS**: the password we use to fetch the backup
 
 ## How to update it
 
