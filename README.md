@@ -44,6 +44,10 @@ Then you have to edit $HOME/.automafield.config.sh as follows:
 * **URL_BACKUPS**: the URL where we can fetch the last version of the SYNC_SERVER (SCP)
 * **LOGIN_BACKUPS**: the login we use to fetch the backup
 * **PASSWORD_BACKUPS**: the password we use to fetch the backup
+* **POSTGRES_USERNAME**: the PostgreSQL's username to connect to other database
+* **POSTGRES_PASSWORD**: the PostgreSQL's password to connect to other database
+* **MY_POSTGRES_USERNAME**: your PostgreSQL's username to connect to your database (0 and 10)
+* **MY_POSTGRES_PASSWORD**: your PostgreSQL's password to connect to your database (0 and 10)
 
 Having done that, you have to set the IP address of your instances. They all have to start with "ct". You can do that in your host file (`/etc/hosts`) like that:
 ```

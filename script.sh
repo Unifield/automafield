@@ -138,14 +138,14 @@ pct_download() {
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
 
     then
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$MY_POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$MY_POSTGRES_PASSWORD
     else
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$POSTGRES_PASSWORD
     fi
 
-    export PGPASSWORD=$POSTGRE_PASSWORD
+    export PGPASSWORD=$PASSWORD_POSTGRES
 
     source $ENV4SYNC
 
@@ -155,7 +155,7 @@ pct_download() {
     PREVIOUS=$PWD
     cd $LOCALENV
 
-    python insert_db.py "$HWID" "$POSTGRE_USERNAME" "$POSTGRE_PASSWORD" "$PORT" "$1" "$BACKUPDIR" "$LOGIN" "$PASSWORD" "$LOGIN_BACKUPS" "$PASSWORD_BACKUPS" "$URL_BACKUPS" ${@:3}
+    python insert_db.py "$HWID" "$LOGIN_POSTGRES" "$PASSWORD_POSTGRES" "$PORT" "$1" "$BACKUPDIR" "$LOGIN" "$PASSWORD" "$LOGIN_BACKUPS" "$PASSWORD_BACKUPS" "$URL_BACKUPS" ${@:3}
 
     cd $PREVIOUS
 
@@ -169,11 +169,11 @@ setup_lettuce()
 {
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
     then
-        POSTGRE_USERNAME=unifield_dev
-        POSTGRE_PASSWORD=unifield_dev
+        LOGIN_POSTGRES=$MY_POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$MY_POSTGRES_PASSWORD
     else
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$POSTGRES_PASSWORD
     fi
 
     PORT=$NORMALPORT
@@ -221,9 +221,9 @@ XMLRPCS_PORT=8071
 UNIFIELDADMIN=$ADMINUSERNAME
 UNIFIELDPASSWORD=$ADMINPASSWORD
 
-DBPASSWORD=$POSTGRE_USERNAME
+DBPASSWORD=$LOGIN_POSTGRES
 DBADDR=ct$1
-DBUSERNAME=$POSTGRE_PASSWORD
+DBUSERNAME=$PASSWORD_POSTGRES
 DBPORT=$PORT
 EOF
 
@@ -437,14 +437,14 @@ pct_sqldump()
 
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
     then
-        POSTGRE_USERNAME=unifield_dev
-        POSTGRE_PASSWORD=unifield_dev
+        LOGIN_POSTGRES=$MY_POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$MY_POSTGRES_PASSWORD
     else
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$POSTGRES_PASSWORD
     fi
 
-    export PGPASSWORD=$POSTGRE_PASSWORD
+    export PGPASSWORD=$PASSWORD_POSTGRES
 
     _convert_name $1 $2
     INSTANCENAME=$RESULT
@@ -453,9 +453,9 @@ pct_sqldump()
 
     if [[ "" == $3 ]];
     then
-        pg_dump --no-owner -U $POSTGRE_USERNAME -h ct$1 $INSTANCENAME -f $INSTANCENAME.sql
+        pg_dump --no-owner -U $LOGIN_POSTGRES -h ct$1 $INSTANCENAME -f $INSTANCENAME.sql
     else
-        pg_dump --no-owner -U $POSTGRE_USERNAME -h ct$1 $INSTANCENAME -f $3.sql
+        pg_dump --no-owner -U $LOGIN_POSTGRES -h ct$1 $INSTANCENAME -f $3.sql
     fi
 }
 
@@ -489,14 +489,14 @@ pct()
 
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
     then
-        POSTGRE_USERNAME=unifield_dev
-        POSTGRE_PASSWORD=unifield_dev
+        LOGIN_POSTGRES=$MY_POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$MY_POSTGRES_PASSWORD
     else
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$POSTGRES_PASSWORD
     fi
 
-    export PGPASSWORD=$POSTGRE_PASSWORD
+    export PGPASSWORD=$PASSWORD_POSTGRES
 
     PORT=$NORMALPORT
 
@@ -507,10 +507,10 @@ pct()
 
     if [[ "" == $2 ]];
     then
-        psql -p $PORT -U $POSTGRE_USERNAME -h ct$1 -d postgres "${@:3}"
+        psql -p $PORT -U $LOGIN_POSTGRES -h ct$1 -d postgres "${@:3}"
     else
         _convert_name $1 $2
-        psql -p $PORT -U $POSTGRE_USERNAME -h ct$1 -d $RESULT "${@:3}"
+        psql -p $PORT -U $LOGIN_POSTGRES -h ct$1 -d $RESULT "${@:3}"
     fi
 }
 
@@ -585,11 +585,11 @@ pct_restore()
 
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
     then
-        POSTGRE_USERNAME=unifield_dev
-        POSTGRE_PASSWORD=unifield_dev
+        LOGIN_POSTGRES=$MY_POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$MY_POSTGRES_PASSWORD
     else
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$POSTGRES_PASSWORD
     fi
 
     PORT=$NORMALPORT
@@ -599,14 +599,14 @@ pct_restore()
         PORT=$MYPORT
     fi
 
-    export PGPASSWORD=$POSTGRE_PASSWORD
+    export PGPASSWORD=$PASSWORD_POSTGRES
 
     if [[ "" == $3 ]];
     then
         if [[ -f "${DBNAME}.dump" ]];
         then
             echo "Restore $DBNAME (${DBNAME}.dump)"
-            pg_restore -p $PORT -n public -U $POSTGRE_USERNAME --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
+            pg_restore -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
         else
             if [[ ! -f "${DBNAME}.sql" ]]
             then
@@ -631,7 +631,7 @@ pct_restore()
             pct $1 $DBNAME < $3
         else
             echo "Restore $DBNAME ($3)"
-            pg_restore -p $PORT -n public -U $POSTGRE_USERNAME --no-acl --no-owner -h ct$1 -d $DBNAME $3
+            pg_restore -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
         fi
     fi
 
@@ -746,11 +746,11 @@ pct_dump()
 
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
     then
-        POSTGRE_USERNAME=unifield_dev
-        POSTGRE_PASSWORD=unifield_dev
+        LOGIN_POSTGRES=$MY_POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$MY_POSTGRES_PASSWORD
     else
-        POSTGRE_USERNAME=unifield
-        POSTGRE_PASSWORD=unifield
+        LOGIN_POSTGRES=$POSTGRES_USERNAME
+        PASSWORD_POSTGRES=$POSTGRES_PASSWORD
     fi
 
     PORT=$NORMALPORT
@@ -760,16 +760,16 @@ pct_dump()
         PORT=$MYPORT
     fi
 
-    export PGPASSWORD=$POSTGRE_PASSWORD
+    export PGPASSWORD=$PASSWORD_POSTGRES
 
     _convert_name $1 $2
     INSTANCE=$RESULT
 
     if [[ "" == $3 ]];
     then
-        pg_dump -p $PORT --no-owner -Fc -U $POSTGRE_USERNAME -h ct$1 $INSTANCE -f ${INSTANCE}.dump
+        pg_dump -p $PORT --no-owner -Fc -U $LOGIN_POSTGRES -h ct$1 $INSTANCE -f ${INSTANCE}.dump
     else
-        pg_dump -p $PORT --no-owner -Fc -U $POSTGRE_USERNAME -h ct$1 $INSTANCE -f $3.dump
+        pg_dump -p $PORT --no-owner -Fc -U $LOGIN_POSTGRES -h ct$1 $INSTANCE -f $3.dump
     fi
 }
 
