@@ -695,15 +695,26 @@ pct_drop()
     _convert_name $1 $2
     INSTANCE=$RESULT
 
+    VERSION=$(pct $1 postgres -t -c  "SHOW SERVER_VERSION")
+    MAJOR_VERSION=${VERSION:1:1}
+
+    if [[ $MAJOR_VERSION == 8 ]]
+    then
+        DB_PROCID=procpid
+    else
+        DB_PROCID=pid
+    fi
+
     if _contains_element $INSTANCE ${INSTANCES[@]};
     then
         echo Drop $INSTANCE
         BEFORE_IFS=$IFS
-        IFS='
-'
-        for line in `pct $1 postgres -c "SELECT 'select pg_terminate_backend(' || procpid || ');' FROM pg_stat_activity WHERE datname = '$INSTANCE'" -t`;
+        IFS=' '
+        E="$(pct 0 postgres -t -c "SELECT 'select pg_terminate_backend(' || $DB_PROCID || ');' FROM pg_stat_activity WHERE datname = '$INSTANCE'")"
+        IFS=';'
+        for line in $(echo -e "$E");
         do
-            pct $1 postgres -c $line > /dev/null
+            pct $1 postgres -c $line > /dev/null 2>&1
         done
 
         IFS=$BEFORE_IFS
