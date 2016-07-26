@@ -16,7 +16,7 @@ You can use the package management system from your linux distribution.
 
 ```
 cd $HOME
-git clone https://github.com/hectord/automafield.git
+git clone --recursive https://github.com/hectord/automafield.git
 echo source $HOME/automafield/script.sh >> ~/.bashrc
 cp automafield/config.sh $HOME/.automafield.config.sh
 ```
@@ -63,7 +63,7 @@ We set ct0 as the localhost by convention.
 ```
 cd $HOME
 rm -rf automafield
-git clone https://github.com/hectord/automafield.git
+git clone --recursive https://github.com/hectord/automafield.git
 ```
 
 **Please do not update testfield if you're using it.**
