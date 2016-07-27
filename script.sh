@@ -710,7 +710,7 @@ pct_drop()
         echo Drop $INSTANCE
         BEFORE_IFS=$IFS
         IFS=' '
-        E="$(pct 0 postgres -t -c "SELECT 'select pg_terminate_backend(' || $DB_PROCID || ');' FROM pg_stat_activity WHERE datname = '$INSTANCE'")"
+        E="$(pct $1 postgres -t -c "SELECT 'select pg_terminate_backend(' || $DB_PROCID || ');' FROM pg_stat_activity WHERE datname = '$INSTANCE'")"
         IFS=';'
         for line in $(echo -e "$E");
         do
