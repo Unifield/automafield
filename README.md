@@ -64,6 +64,9 @@ We set ct0 as the localhost by convention.
 cd $HOME
 rm -rf automafield
 git clone --recursive https://github.com/hectord/automafield.git
+source myenv_automafield/bin/activate
+cd automafield
+pip install -r requirements.txt
 ```
 
 **Please do not update testfield if you're using it.**
