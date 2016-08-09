@@ -113,7 +113,7 @@ pct_download() {
         ;;
 
     OCA)
-        BACKUPDIR=Field
+        BACKUPDIR=OCA_Backups
         LOGIN=$MY_LOGIN_OWNCLOUD
         PASSWORD=$MY_PASSWORD_OWNCLOUD
         ;;
