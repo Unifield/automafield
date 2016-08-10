@@ -7,3 +7,4 @@ lettuce==0.2.21
 easywebdav==1.2.0
 bottle
 python-Levenshtein
+paramiko==2.0.1
