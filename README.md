@@ -9,7 +9,7 @@ A few commands are provided to manage these databases (restore, dump, synchroniz
 Before installing automafield itself and building the Python environment for it, you need the following tools:
 * git
 * python-pip
-* postgresql-server-dev-all postgresql-client
+* postgresql-client-8.4 (*you need PostgreSQL 8.4 for automafield*, if this version is not the default one in your Linux distribution please check out the [PostgreSQL Apt Repository](https://www.postgresql.org/download/linux/ubuntu/))
 * libjpeg-dev
 
 You can use the package management system from your linux distribution.
@@ -57,6 +57,8 @@ Having done that, you have to set the IP address of your instances. They all hav
 ```
 
 We set ct0 as the localhost by convention.
+
+Please reload your ```~/.bashrc``` after each change in automafield's configuration. Otherwise, your change won't be taken into account.
 
 ## How to update it
 
