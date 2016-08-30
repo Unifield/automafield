@@ -12,7 +12,7 @@ Before installing automafield itself and building the Python environment for it,
 * postgresql-client-8.4 (*you need PostgreSQL 8.4 for automafield*, if this version is not the default one in your Linux distribution please check out the [PostgreSQL Apt Repository](https://www.postgresql.org/download/linux/ubuntu/))
 * libjpeg-dev
 * tmux
-* faketime (>= 0.9.6)
+* [faketime](https://github.com/wolfcw/libfaketime) (>= 0.9.6)
 
 You can use the package management system from your linux distribution.
 
