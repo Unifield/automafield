@@ -58,6 +58,8 @@ Having done that, you have to set the IP address of your instances. They all hav
 192.168.1.2 ct2 
 ```
 
+You'll also have to update the entity IDs in the function called pct_link in script.sh for each instance. Otherwise your instances won't be linked correctly.
+
 We set ct0 as the localhost by convention.
 
 Please reload your ```~/.bashrc``` after each change in automafield's configuration. Otherwise, your change won't be taken into account.
