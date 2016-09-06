@@ -835,7 +835,7 @@ pct_login()
     BEFORE_TIME=$TIME_BEFORE_FAILURE
     export TIME_BEFORE_FAILURE=$TIMEOUT
 
-    if ./runtests_local.sh login.feature
+    if ./runtests_local.sh login.feature >/dev/null 2>&1
     then
         echo "Login $LETTUCE_DATABASE: OK"
         RET=0
