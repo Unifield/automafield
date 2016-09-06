@@ -39,7 +39,6 @@ OWNCLOUD_PASSWORD = sys.argv[8]
 
 LOGIN_BACKUPS = sys.argv[9]
 PASSWORD_BACKUPS = sys.argv[10]
-URL_BACKUPS = sys.argv[11]
 
 instances_to_download = sys.argv[12:]
 
@@ -214,7 +213,7 @@ def restore_dump(filename, destination_dump_file):
     ret = os.system('pg_restore -p %d -h %s -U %s --no-acl --no-owner -d %s %s' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, destination_dump_file))
 
     if ret != 0:
-        raise RestoreFails("Bad dump file (rc=%s, db=%s)" % (str(ret), dbname))
+        raise RestoreFails("Bad dump file (%s)" % str(ret), dbname)
 
     try:
         os.unlink(destination_dump_file)
