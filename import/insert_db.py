@@ -2,13 +2,9 @@
 
 import datetime
 from paramiko import SSHClient, AutoAddPolicy
-from scp import SCPClient
-import os.path
-import sys
-import os
-import re
+import os.path, sys, fnmatch, os, re, time
 import easywebdav
-import time
+import subprocess
 
 from time import mktime
 from datetime import datetime
@@ -16,8 +12,16 @@ from datetime import datetime
 from zipfile import *
 
 import tempfile
-
 import sys
+
+import urllib3
+http = urllib3.PoolManager()
+
+import logging
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+ch = logging.StreamHandler(stream=sys.stderr)
+ch.setLevel(logging.WARNING)
+logging.root.addHandler(ch)
 
 HWID = sys.argv[1]
 
@@ -60,7 +64,11 @@ def run_script(dbname, script):
     f.close()
 
     os.environ['PGPASSWORD'] = POSTGRESQL_PASSWORD
-    ret = os.system('psql -p %d -h %s -U %s %s < %s' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, scriptfile[1]))
+    ret = os.system('psql -q -p %d -h %s -U %s %s < %s > out 2> err' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, scriptfile[1]))
+
+    # This little dance moves NOTICE: lines over from stderr to stdout
+    os.system('grep ^NOTICE: err >> out; grep -v ^NOTICE: err >&2')
+    os.system('cat out; rm out err')
 
     try:
         os.unlink(scriptfile[1])
@@ -69,18 +77,8 @@ def run_script(dbname, script):
 
     return ret
 
-def go_to_backups(webdav):
-    webdav.cd("remote.php")
-    webdav.cd("webdav")
-    webdav.cd(OWNCLOUD_DIRECTORY)
-
 def get_all_files_and_timestamp(webdav):
-
     dump_files_avilable = webdav.ls()
-
-    webdav.cd("remote.php")
-    webdav.cd("webdav")
-    webdav.cd(OWNCLOUD_DIRECTORY)
 
     all_the_files = []
 
@@ -216,7 +214,7 @@ def restore_dump(filename, destination_dump_file):
     ret = os.system('pg_restore -p %d -h %s -U %s --no-acl --no-owner -d %s %s' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, destination_dump_file))
 
     if ret != 0:
-        raise RestoreFails("Bad dump file (%s)" % str(ret), dbname)
+        raise RestoreFails("Bad dump file (rc=%s, db=%s)" % (str(ret), dbname))
 
     try:
         os.unlink(destination_dump_file)
@@ -234,46 +232,50 @@ def restore_dump(filename, destination_dump_file):
     return dbname
 
 def download_and_restore_syncserver(db_name):
-    s = 'clean.sql'
+    url = "http://sync-prod_dump.uf5.unifield.org/SYNC_SERVER_LIGHT_WITH_MASTER"
+    up = LOGIN_BACKUPS + ':' + PASSWORD_BACKUPS
+    
+    logging.info("Fetching dump from %s" % url)
+    r = http.request('GET',
+                     url,
+                     headers=urllib3.util.make_headers(basic_auth=up),
+                     preload_content=False)
 
-    try:
-        os.unlink(s)
-    except OSError as e:
-        pass
+    logging.info("Drop table.")
+    ret = run_script("postgres", 'DROP DATABASE IF EXISTS "%s";' % db_name)
+    if ret != 0:
+        raise Exception("Cannot drop the database %s" % db_name)
+    ret = run_script("postgres", 'CREATE DATABASE "%s";' % db_name)
+    if ret != 0:
+        raise Exception("Cannot create the database %s" % db_name)
 
-    ssh = SSHClient()
-    ssh.set_missing_host_key_policy(AutoAddPolicy())
-    ssh.connect(URL_BACKUPS,  username=LOGIN_BACKUPS, password=PASSWORD_BACKUPS)
-
-    path = "/home/unifield_backups/syncsdv/dump_msfsync-slave/"
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command('ls -1rth ' + path + ' | tail -2')
-
-    filename = ssh_stdout.read()
-    filename = filename.strip().split()[0]
-
-    new_path = os.path.join(path, filename)
-    scp = SCPClient(ssh.get_transport())
-    scp.get(new_path)
-    scp.close()
-
-    filename_sql = '.'.join(filename.split('.')[:-1])
-
-    os.system("unlzma %s" % filename)
-
-    run_script("postgres", 'DROP DATABASE IF EXISTS "%s";' % db_name)
-    run_script("postgres", 'CREATE DATABASE "%s";' % db_name)
-
+    logging.info("SQL load.")
     os.environ['PGPASSWORD'] = POSTGRESQL_PASSWORD
-    os.system('psql -p %d -h %s -U %s %s < %s' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, db_name, filename_sql))
+    p = subprocess.Popen(['pg_restore',
+                         '-p', str(POSTGRESQL_PORT),
+                         '-h', POSTGRESQL_SERVER,
+                         '-U', POSTGRESQL_USERNAME,
+                         '-d', db_name,
+                          '--no-acl', '--no-owner'],
+                         stdin=subprocess.PIPE)
+    bytes = 0
+    for chunk in r.stream():
+        bytes += len(chunk)
+        p.stdin.write(chunk)
+        if (bytes % (1024*1024) == 0):
+            print "progress: %s bytes" % bytes
 
-    try:
-        os.unlink(filename_sql)
-        os.unlink(s)
-    except OSError as e:
-        pass
+    print "progress: %s bytes (done)" % bytes
+    p.stdin.close()
+    ret = p.wait()
+    if ret != 0:
+        raise Exception("Non-zero result when loading the database: %s" % ret)
+
+#
+# main
+#
 
 DBNAME = 'SYNC_SERVER_XXX'
-
 if match_any_wildcard(DBNAME):
     download_and_restore_syncserver(DBNAME)
 
@@ -281,36 +283,46 @@ webdav = easywebdav.connect('cloud.msf.org',
                             username=OWNCLOUD_USERNAME,
                             password=OWNCLOUD_PASSWORD,
                             protocol='https')
-go_to_backups(webdav)
+webdav.cd("remote.php")
+webdav.cd("webdav")
+webdav.cd(OWNCLOUD_DIRECTORY)
+
 all_the_files = get_all_files_and_timestamp(webdav)
 all_the_files = group_files_to_download(all_the_files)
 
 for key, values in all_the_files.iteritems():
-
     if not values:
         continue
-
 
     if not match_any_wildcard(key):
         continue
 
     for filename, f in values:
         try:
+            if not fnmatch.fnmatch(f.name, "*.zip"):
+                logging.info("Skipping non-zip file %s" % f.name)
+                continue
+
             print "Fetching %s (in %s)" % (filename, f.name)
-
             destination_dump_file = fetch_webdav_file(webdav, f)
-
             dbname = restore_dump(filename, destination_dump_file)
+
+            # The values of the keys of all_the_files are in order
+            # from newest to oldest. So stop processing once we have
+            # restored the first file for this instance.
             break
         except RestoreFails as e:
+            # RestoreFails means that we were unable to fix up the database
+            # after loading it, so it would be bad to leave it. So drop the
+            # DB if it still exists.
             run_script('postgres', 'DROP DATABASE IF EXISTS "%s"' % e.dbname())
-            # we have drop the DB if it still exists
             import traceback
             traceback.print_exc()
-            print e
+            logging.error(e)
         except Exception, e:
-            # we have to restore the DB if possible
+            # Something went wrong, leave the database in case it was
+            # well enough loaded to be usable.
             import traceback
             traceback.print_exc()
-            print e
+            logging.error(e)
 

@@ -1,10 +1,22 @@
-scp==0.10.2
-selenium==2.53.1
+# Before installing these, you also need:
+# sudo apt-get install libcurl4-openssl-dev
+argcomplete==1.1.0
+argparse==1.2.1
+bottle
+distribute==0.6.24
+easywebdav==1.2.0
+ecdsa==0.13
+lettuce==0.2.21
+lxml==3.5.0
 OERPLib==0.8.4
+paramiko==2.0.1
 Pillow==3.2.0
 psycopg2==2.6.1
-lettuce==0.2.21
-easywebdav==1.2.0
-bottle
+pycrypto==2.6.1
+pycurl==7.43.0
 python-Levenshtein
-paramiko==2.0.1
+scp==0.10.2
+selenium==2.53.1
+urllib3[secure]
+webdavclient==1.0.5
+wsgiref==0.1.2

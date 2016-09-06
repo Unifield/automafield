@@ -149,20 +149,12 @@ pct_download() {
 
     source $ENV4SYNC
 
-    LOCALENV=$SCRIPTS/import-$$
-    mkdir $LOCALENV
-    cp -R $SCRIPTS/import/* $LOCALENV/
-    PREVIOUS=$PWD
-    cd $LOCALENV
+    python $SCRIPTS/import/insert_db.py "$HWID" "$LOGIN_POSTGRES" "$PASSWORD_POSTGRES" "$PORT" "$1" "$BACKUPDIR" "$LOGIN" "$PASSWORD" "$LOGIN_BACKUPS" "$PASSWORD_BACKUPS" ${@:3}
+    rc=$?
 
-    python insert_db.py "$HWID" "$LOGIN_POSTGRES" "$PASSWORD_POSTGRES" "$PORT" "$1" "$BACKUPDIR" "$LOGIN" "$PASSWORD" "$LOGIN_BACKUPS" "$PASSWORD_BACKUPS" "$URL_BACKUPS" ${@:3}
-
-    cd $PREVIOUS
-
-    rm -rf $LOCALENV
     deactivate
 
-    return 0
+    return $rc
 }
 
 setup_lettuce()
@@ -396,15 +388,19 @@ pct_password()
     if [[ $# != 3 ]]
     then
         echo "Usage: pct_password ct# instance password"
-        echo " Description: reset the admin password on ct# for the given instance"
+        echo " Description: reset the passwords on ct# for the given instance"
         return
     fi
 
     _convert_name $1 $2
     INSTANCENAME=$RESULT
 
-    echo "$INSTANCENAME => $3"
+    # Change user id 1's username/password.
     pct $1 $INSTANCENAME -c "UPDATE res_users SET login = '$3', password = '$3' WHERE id = 1" > /dev/null
+    # To keep the number of plaintext passwords floating around to a
+    # minimum, wipe out all the plaintext passwords, set them to the
+    # same as the admin user.
+    pct $1 $INSTANCENAME -c "UPDATE res_users SET password = '$3'" > /dev/null
 }
 
 pct_passwordall()
@@ -420,6 +416,7 @@ pct_passwordall()
     do
         if [[ $# == 2 ]] || _contains_element $db ${@:3};
         then
+	    echo "Setting passwords on $db."
             pct_password $1 $db $2
         fi
     done
@@ -838,7 +835,7 @@ pct_login()
     BEFORE_TIME=$TIME_BEFORE_FAILURE
     export TIME_BEFORE_FAILURE=$TIMEOUT
 
-    if ./runtests_local.sh login.feature 1>&2 > /dev/null;
+    if ./runtests_local.sh login.feature
     then
         echo "Login $LETTUCE_DATABASE: OK"
         RET=0

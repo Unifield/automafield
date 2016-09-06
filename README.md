@@ -43,7 +43,6 @@ Then you have to edit $HOME/.automafield.config.sh as follows:
 * **MY_LOGIN_OWNCLOUD**: your login on OwnCloud
 * **MY_PASSWORD_OWNCLOUD**: your password on OwnCloud
 * **MYHWID**: you instance's hardware ID
-* **URL_BACKUPS**: the URL where we can fetch the last version of the SYNC_SERVER (SCP)
 * **LOGIN_BACKUPS**: the login we use to fetch the backup
 * **PASSWORD_BACKUPS**: the password we use to fetch the backup
 * **POSTGRES_USERNAME**: the PostgreSQL's username to connect to other database

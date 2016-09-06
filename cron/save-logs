@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# A wrapper script to log the output and only let cron see it
+# when something goes wrong.
+
+dir=$HOME/logs/`date +%Y%m%d-%H%M`
+if [ -d $dir ]; then
+    echo "Cannot overwrite log dir $dir."
+    exit
+fi
+mkdir -p $dir
+
+date > $dir/start.txt
+$* > $dir/stdout.txt 2>$dir/stderr.txt
+rc=$?
+date > $dir/end.txt
+
+if [ $rc != 0 -o -s $dir/stderr.txt ]; then
+    echo "Command: $*"
+    echo "  -> result code: $rc"
+    echo
+
+    echo "stderr:"
+    cat $dir/stderr.txt
+    echo "----"
+
+    echo
+    echo "stdout:"
+    cat $dir/stdout.txt
+    echo "----"
+
+    echo
+    echo "Working directory: " $dir
+fi
