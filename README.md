@@ -33,6 +33,7 @@ cd $HOME
 virtualenv myenv_automafield
 source myenv_automafield/bin/activate
 cd automafield
+sudo apt-get install libcurl4-openssl-dev
 pip install -r requirements.txt
 ```
 
