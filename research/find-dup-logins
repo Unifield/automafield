@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+# Looking for logins that would cause a problem when they are
+# lower-cased.
+#
+# Run like this:
+# ./all-usernames | ./find-dup-logins
+
+import csv
+import sys
+
+r = csv.reader(sys.stdin, delimiter='|')
+users = dict()
+for row in r:
+    if len(row) != 2:
+        continue
+
+    iu=row[0]+'|'+row[1].lower()
+    if iu in users:
+        users[iu] = users[iu]+1
+    else:
+        users[iu] = 1
+
+for iu in users:
+    if users[iu] != 1:
+        print iu
+
