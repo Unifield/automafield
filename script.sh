@@ -450,9 +450,9 @@ pct_sqldump()
 
     if [[ "" == $3 ]];
     then
-        pg_dump --no-owner -U $LOGIN_POSTGRES -h ct$1 $INSTANCENAME -f $INSTANCENAME.sql
+        pg_dump $PGV --no-owner -U $LOGIN_POSTGRES -h ct$1 $INSTANCENAME -f $INSTANCENAME.sql
     else
-        pg_dump --no-owner -U $LOGIN_POSTGRES -h ct$1 $INSTANCENAME -f $3.sql
+        pg_dump $PGV --no-owner -U $LOGIN_POSTGRES -h ct$1 $INSTANCENAME -f $3.sql
     fi
 }
 
@@ -603,7 +603,8 @@ pct_restore()
         if [[ -f "${DBNAME}.dump" ]];
         then
             echo "Restore $DBNAME (${DBNAME}.dump)"
-            pg_restore -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
+            echo pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
+            pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
         else
             if [[ ! -f "${DBNAME}.sql" ]]
             then
@@ -628,13 +629,15 @@ pct_restore()
             pct $1 $DBNAME < $3
         else
             echo "Restore $DBNAME ($3)"
-            pg_restore -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
+	    echo pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
+            pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
         fi
     fi
 
     # remove all the automatic tasks
     pct $1 $DBNAME -c "UPDATE ir_cron SET active = 'f' WHERE model = 'backup.config'"
     pct $1 $DBNAME -c "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'"
+    pct $1 $DBNAME -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f'";
 }
 
 pct_restoreall()
@@ -775,9 +778,9 @@ pct_dump()
 
     if [[ "" == $3 ]];
     then
-        pg_dump -p $PORT --no-owner -Fc -U $LOGIN_POSTGRES -h ct$1 $INSTANCE -f ${INSTANCE}.dump
+        pg_dump $PGV -p $PORT --no-owner -Fc -U $LOGIN_POSTGRES -h ct$1 $INSTANCE -f ${INSTANCE}.dump
     else
-        pg_dump -p $PORT --no-owner -Fc -U $LOGIN_POSTGRES -h ct$1 $INSTANCE -f $3.dump
+        pg_dump $PGV -p $PORT --no-owner -Fc -U $LOGIN_POSTGRES -h ct$1 $INSTANCE -f $3.dump
     fi
 }
 
@@ -877,7 +880,7 @@ pct_loginall()
         return 1
     fi
 
-    for db in `pct_all_instances ${ARGS_LOGINALL[0]}`;
+    for db in `pct_all_instances ${ARGS_LOGINALL[0]}`
     do
         RET=${ARGS_LOGINALL:0}
 
@@ -885,7 +888,6 @@ pct_loginall()
 
         if [[ ${#ARGS_LOGINALL[*]} == 1 ]] || _contains_element $db ${INSTANCES[@]};
         then
-            echo "Login $db"
             pct_login $ARGSPCT_LOGIN ${ARGS_LOGINALL[0]} $db
         fi
     done

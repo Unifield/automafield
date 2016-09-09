@@ -63,11 +63,12 @@ def run_script(dbname, script):
     f.close()
 
     os.environ['PGPASSWORD'] = POSTGRESQL_PASSWORD
-    ret = os.system('psql -q -p %d -h %s -U %s %s < %s > out 2> err' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, scriptfile[1]))
+    d = tempfile.mkdtemp()
+    ret = os.system('psql -q -p %d -h %s -U %s %s < %s > %s/out 2> %s/err' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, scriptfile[1], d, d))
 
     # This little dance moves NOTICE: lines over from stderr to stdout
-    os.system('grep ^NOTICE: err >> out; grep -v ^NOTICE: err >&2')
-    os.system('cat out; rm out err')
+    os.system('grep ^NOTICE: %s/err >> %s/out; grep -v ^NOTICE: %s/err >&2' % (d, d, d))
+    os.system('cat %s/out; rm -rf %s' % (d, d))
 
     try:
         os.unlink(scriptfile[1])
@@ -174,7 +175,7 @@ class RestoreFails(Exception):
         self._dbname = dbname
 
     def __str__(self):
-        return self._message
+        return "%s (database name: %s)" % (self._message, self._dbname)
 
     def dbname(self):
         return self._dbname
@@ -261,10 +262,8 @@ def download_and_restore_syncserver(db_name):
     for chunk in r.stream():
         bytes += len(chunk)
         p.stdin.write(chunk)
-        if (bytes % (1024*1024) == 0):
-            print "progress: %s bytes" % bytes
 
-    print "progress: %s bytes (done)" % bytes
+    print "Fetched %s bytes." % bytes
     p.stdin.close()
     ret = p.wait()
     if ret != 0:
