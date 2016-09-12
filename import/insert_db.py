@@ -2,9 +2,10 @@
 
 import datetime
 from paramiko import SSHClient, AutoAddPolicy
-import os.path, sys, fnmatch, os, re, time
+import os, os.path, sys, fnmatch, re, time
 import easywebdav
 import subprocess
+import traceback
 
 from time import mktime
 from datetime import datetime
@@ -40,7 +41,7 @@ OWNCLOUD_PASSWORD = sys.argv[8]
 LOGIN_BACKUPS = sys.argv[9]
 PASSWORD_BACKUPS = sys.argv[10]
 
-instances_to_download = sys.argv[12:]
+instances_to_download = sys.argv[11:]
 
 def match_instance_name(instance_to_download, db_name):
     instance_to_download = '^' + '.*'.join(map(lambda x : re.escape(x), instance_to_download.split('%'))) + '$'
@@ -135,7 +136,8 @@ def fetch_webdav_file(webdav, f):
     # We have to download the file and restore it
     #  in another place
     destination_dir = '.'
-    destination_zip_file = os.path.join(destination_dir, 'tmp.zip')
+    destination_zip_file = os.path.join(destination_dir,
+                                        'tmp.%d.zip' % os.getpid())
 
     try:
         os.unlink(destination_zip_file)
@@ -181,15 +183,6 @@ class RestoreFails(Exception):
         return self._dbname
 
 def restore_dump(filename, destination_dump_file):
-
-    sql_file = 'create_db.sql'
-
-    try:
-        if os.path.isfile(sql_file):
-            os.unlink(sql_file)
-    except OSError as e:
-        pass
-
     #TODO: Extract datetime from the filename
     #OCG_MZ1_CHA-20160315-140256-A-UF2.1-0p1.dump
     reg = re.compile('^(.*/)?(?P<dbname>[^-/]*)-\d{4}(?P<mois>\d{2})(?P<jour>\d{2})-(?P<heure>\d{2})(?P<minute>\d{2})\d{2}-.*$')
@@ -208,10 +201,11 @@ def restore_dump(filename, destination_dump_file):
     if ret != 0:
         raise Exception("Cannot create the new database %s" % dbname)
 
-    # we try to remove the extension if it exists, it could cause pg_restore to return an exit code != 0
-    run_script(dbname, 'DROP  LANGUAGE IF EXISTS plpgsql')
+    # Try to remove the extension if it exists, because it could
+    # cause pg_restore to return an exit code != 0
+    run_script(dbname, 'DROP LANGUAGE IF EXISTS plpgsql')
 
-    ret = os.system('pg_restore -p %d -h %s -U %s --no-acl --no-owner -d %s %s' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, destination_dump_file))
+    ret = os.system('pg_restore -p %d -h %s -U %s --no-acl --no-owner -d %s %s 2>&1' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, destination_dump_file))
 
     if ret != 0:
         raise RestoreFails("Bad dump file (%s)" % str(ret), dbname)
@@ -223,11 +217,18 @@ def restore_dump(filename, destination_dump_file):
 
     ret = run_script(dbname, "UPDATE ir_cron SET active = 'f' WHERE model = 'backup.config'")
     if ret != 0:
-        raise RestoreFails("Cannot configure the backup file (%s)" % str(ret), dbname)
-    ret = run_script(dbname, "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'")
+        raise RestoreFails("Cannot disable backups (%s)" % str(ret), dbname)
 
+    ret = run_script(dbname, "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'")
     if ret != 0:
-        raise RestoreFails("Cannot configure the backup file (%s)" % str(ret), dbname)
+        raise RestoreFails("Cannot disable sync (%s)" % str(ret), dbname)
+
+    # Even though we disable backups, the directory name should be
+    # one that exists, because an obligatory backup is done during
+    # patching, and if it fails, the upgrade fails.
+    ret = run_script(dbname, "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', name = E'd:\\\\'")
+    if ret != 0:
+        raise RestoreFails("Cannot set the backup config (%s)" % str(ret), dbname)
 
     return dbname
 
@@ -295,6 +296,8 @@ for key, values in all_the_files.iteritems():
     if not match_any_wildcard(key):
         continue
 
+    ok = False
+    dbname = ""
     for filename, f in values:
         try:
             if not fnmatch.fnmatch(f.name, "*.zip"):
@@ -308,19 +311,22 @@ for key, values in all_the_files.iteritems():
             # The values of the keys of all_the_files are in order
             # from newest to oldest. So stop processing once we have
             # restored the first file for this instance.
+            ok = True
             break
         except RestoreFails as e:
             # RestoreFails means that we were unable to fix up the database
             # after loading it, so it would be bad to leave it. So drop the
             # DB if it still exists.
             run_script('postgres', 'DROP DATABASE IF EXISTS "%s"' % e.dbname())
-            import traceback
-            traceback.print_exc()
             logging.error(e)
         except Exception, e:
             # Something went wrong, leave the database in case it was
             # well enough loaded to be usable.
-            import traceback
             traceback.print_exc()
             logging.error(e)
-
+    if not ok:
+        logging.error("Failed to find any valid backups for %s." %
+                      key)
+    else:
+        logging.info("%s restored into %s." % (key, dbname))
+    

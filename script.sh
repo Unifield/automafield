@@ -92,8 +92,8 @@ pct_download() {
 
     if [[ $# < 2 ]];
     then
-        echo "Usage: pct_download ct# [OC] [ instance1 instance2 ...] "
-        echo " Description: load all the databases coming from an OC (OCG and OCB available now)"
+        echo "Usage: pct_download ct# [OCA|OCB|OCG] [ instance1 instance2 ...] "
+        echo " Description: load all the databases coming from an OC."
         return 1
     fi
 
@@ -301,7 +301,7 @@ pct_sync() {
     export TIME_BEFORE_FAILURE=
 
     # remove the backups before/after sync
-    pct $1 $LETTUCE_DATABASE -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f'"
+    pct $1 $LETTUCE_DATABASE -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f'"
 
     if ./runtests_local.sh synchronize.feature 1>&2 > /dev/null;
     then
@@ -357,10 +357,9 @@ pct_link() {
     INSTANCENAME=`pct $1 $INSTANCE_NAME -c "SELECT name FROM sync_client_entity" -t`
     HWID=$(pct_get_hwid $1)
 
-    echo $INSTANCE_NAME '=>' $SYNC_SERVER_NAME
-
-    pct $1 $INSTANCE_NAME -c "UPDATE sync_client_sync_server_connection SET protocol = 'xmlrpc', login = '$ADMINUSERNAME', database = '$SYNC_SERVER_NAME', host='127.0.0.1', port=8069"
-    pct $1 $SYNC_SERVER_NAME -c "UPDATE sync_server_entity SET hardware_id = '$HWID' WHERE name = trim('$INSTANCENAME')"
+    echo "Linking $INSTANCE_NAME"
+    pct $1 $INSTANCE_NAME -q -c "UPDATE sync_client_sync_server_connection SET protocol = 'xmlrpc', login = '$ADMINUSERNAME', database = '$SYNC_SERVER_NAME', host='127.0.0.1', port=8069"
+    pct $1 $SYNC_SERVER_NAME -q -c "UPDATE sync_server_entity SET hardware_id = '$HWID' WHERE name = trim('$INSTANCENAME')"
 }
 
 pct_linkall() {
@@ -396,11 +395,11 @@ pct_password()
     INSTANCENAME=$RESULT
 
     # Change user id 1's username/password.
-    pct $1 $INSTANCENAME -c "UPDATE res_users SET login = '$3', password = '$3' WHERE id = 1" > /dev/null
+    pct $1 $INSTANCENAME -q -c "UPDATE res_users SET login = '$3', password = '$3' WHERE id = 1" > /dev/null
     # To keep the number of plaintext passwords floating around to a
     # minimum, wipe out all the plaintext passwords, set them to the
     # same as the admin user.
-    pct $1 $INSTANCENAME -c "UPDATE res_users SET password = '$3'" > /dev/null
+    pct $1 $INSTANCENAME -q -c "UPDATE res_users SET password = '$3'" > /dev/null
 }
 
 pct_passwordall()
@@ -578,7 +577,7 @@ pct_restore()
     DBNAME=$RESULT
 
     pct_drop $1 $DBNAME
-    pct $1 postgres -c "CREATE DATABASE \"$DBNAME\""
+    pct $1 postgres -q -c "CREATE DATABASE \"$DBNAME\""
 
     if [[ "0" == $1 ]] || [[ "10" == $1 ]];
     then
@@ -603,7 +602,6 @@ pct_restore()
         if [[ -f "${DBNAME}.dump" ]];
         then
             echo "Restore $DBNAME (${DBNAME}.dump)"
-            echo pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
             pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
         else
             if [[ ! -f "${DBNAME}.sql" ]]
@@ -629,15 +627,18 @@ pct_restore()
             pct $1 $DBNAME < $3
         else
             echo "Restore $DBNAME ($3)"
-	    echo pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
             pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
         fi
     fi
 
     # remove all the automatic tasks
-    pct $1 $DBNAME -c "UPDATE ir_cron SET active = 'f' WHERE model = 'backup.config'"
-    pct $1 $DBNAME -c "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'"
-    pct $1 $DBNAME -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f'";
+    pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'backup.config'"
+    pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'"
+    if [ "$1" = "0" ]; then
+	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', name = '/tmp'"
+    else
+	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', name = E'd:\\\\'"
+    fi
 }
 
 pct_restoreall()
