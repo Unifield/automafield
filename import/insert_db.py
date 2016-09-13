@@ -208,7 +208,7 @@ def restore_dump(filename, destination_dump_file):
     ret = os.system('pg_restore -p %d -h %s -U %s --no-acl --no-owner -d %s %s 2>&1' % (POSTGRESQL_PORT, POSTGRESQL_SERVER, POSTGRESQL_USERNAME, dbname, destination_dump_file))
 
     if ret != 0:
-        raise RestoreFails("Bad dump file (%s)" % str(ret), dbname)
+        raise RestoreFails("Bad dump file (rc=%s)" % str(ret), dbname)
 
     try:
         os.unlink(destination_dump_file)
@@ -318,7 +318,7 @@ for key, values in all_the_files.iteritems():
             # after loading it, so it would be bad to leave it. So drop the
             # DB if it still exists.
             run_script('postgres', 'DROP DATABASE IF EXISTS "%s"' % e.dbname())
-            logging.error(e)
+            logging.info(e)
         except Exception, e:
             # Something went wrong, leave the database in case it was
             # well enough loaded to be usable.
