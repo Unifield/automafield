@@ -232,7 +232,7 @@ def restore_dump(filename, destination_dump_file):
 
     return dbname
 
-def download_and_restore_syncserver(db_name):
+def download_and_restore_syncserver(dbname):
     url = "http://sync-prod_dump.uf5.unifield.org/SYNC_SERVER_LIGHT_WITH_MASTER"
     up = LOGIN_BACKUPS + ':' + PASSWORD_BACKUPS
     
@@ -243,12 +243,12 @@ def download_and_restore_syncserver(db_name):
                      preload_content=False)
 
     logging.info("Drop table.")
-    ret = run_script("postgres", 'DROP DATABASE IF EXISTS "%s";' % db_name)
+    ret = run_script("postgres", 'DROP DATABASE IF EXISTS "%s";' % dbname)
     if ret != 0:
-        raise Exception("Cannot drop the database %s" % db_name)
-    ret = run_script("postgres", 'CREATE DATABASE "%s";' % db_name)
+        raise Exception("Cannot drop the database %s" % dbname)
+    ret = run_script("postgres", 'CREATE DATABASE "%s";' % dbname)
     if ret != 0:
-        raise Exception("Cannot create the database %s" % db_name)
+        raise Exception("Cannot create the database %s" % dbname)
 
     logging.info("SQL load.")
     os.environ['PGPASSWORD'] = POSTGRESQL_PASSWORD
@@ -256,7 +256,7 @@ def download_and_restore_syncserver(db_name):
                          '-p', str(POSTGRESQL_PORT),
                          '-h', POSTGRESQL_SERVER,
                          '-U', POSTGRESQL_USERNAME,
-                         '-d', db_name,
+                         '-d', dbname,
                           '--no-acl', '--no-owner'],
                          stdin=subprocess.PIPE)
     bytes = 0
@@ -269,6 +269,12 @@ def download_and_restore_syncserver(db_name):
     ret = p.wait()
     if ret != 0:
         raise Exception("Non-zero result when loading the database: %s" % ret)
+
+    # See US-1475 for why this index is useful on instances used for
+    # research into sync problems.
+    ret = run_script(dbname, "CREATE INDEX sync_server_update_sdref_index ON sync_server_update(sdref);")
+    if ret != 0:
+        raise RestoreFails("Cannot add index.", dbname)
 
 #
 # main
