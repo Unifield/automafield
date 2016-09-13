@@ -241,6 +241,8 @@ def download_and_restore_syncserver(dbname):
                      url,
                      headers=urllib3.util.make_headers(basic_auth=up),
                      preload_content=False)
+    if r.status != 200:
+	raise Exception("HTTP error: %s" % r.status)
 
     logging.info("Drop table.")
     ret = run_script("postgres", 'DROP DATABASE IF EXISTS "%s";' % dbname)
