@@ -132,7 +132,6 @@ def group_files_to_download(all_the_files):
     return ret_files
 
 def fetch_webdav_file(webdav, f):
-
     # We have to download the file and restore it
     #  in another place
     destination_dir = '.'
@@ -151,7 +150,10 @@ def fetch_webdav_file(webdav, f):
     ## we open the zip file
     with ZipFile(destination_zip_file, 'r') as myzip:
         files = myzip.infolist()
-        assert len(files) == 1
+        if len(files) == 0:
+            raise UnzipFails(f.name)
+        if len(files) > 1:
+            logging.warn("Extra files found in %s" % f.name)
         zipfile = files[0]
 
         destination_dump_file = os.path.join(destination_dir, zipfile.filename)
@@ -181,6 +183,13 @@ class RestoreFails(Exception):
 
     def dbname(self):
         return self._dbname
+
+class UnzipFails(Exception):
+    def __init__(self, f):
+        self._f = f
+
+    def __str__(self):
+        return "Unzip of %s resulted in no files." % self._f
 
 def restore_dump(filename, destination_dump_file):
     #TODO: Extract datetime from the filename
@@ -321,10 +330,15 @@ for key, values in all_the_files.iteritems():
             # restored the first file for this instance.
             ok = True
             break
+        except UnzipFails as e:
+            # UnzipFails means that we were not even able to find a
+            # file to try to restore. So log and keep looking for
+            # the next one.
+            logging.info(e)
         except RestoreFails as e:
-            # RestoreFails means that we were unable to fix up the database
-            # after loading it, so it would be bad to leave it. So drop the
-            # DB if it still exists.
+            # RestoreFails means that we were unable to fix up the
+            # database after loading it, so it would be bad to leave
+            # it. So drop the DB if it still exists.
             run_script('postgres', 'DROP DATABASE IF EXISTS "%s"' % e.dbname())
             logging.info(e)
         except Exception, e:

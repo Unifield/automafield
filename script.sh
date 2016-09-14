@@ -603,6 +603,7 @@ pct_restore()
         then
             echo "Restore $DBNAME (${DBNAME}.dump)"
             pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME ${DBNAME}.dump
+	    [ $? != 0 ] && return $?
         else
             if [[ ! -f "${DBNAME}.sql" ]]
             then
@@ -628,6 +629,7 @@ pct_restore()
         else
             echo "Restore $DBNAME ($3)"
             pg_restore $PGV -p $PORT -n public -U $LOGIN_POSTGRES --no-acl --no-owner -h ct$1 -d $DBNAME $3
+	    [ $? != 0 ] && return $?
         fi
     fi
 
@@ -678,6 +680,9 @@ pct_restoreall()
         then
             echo "Restore $DATABASE (dump/sql)"
             pct_restore $1 $DATABASE $DBFILE
+	    if [ $? != 0 ]; then
+		break
+	    fi
         fi
     done
 }
@@ -720,7 +725,7 @@ pct_drop()
 
         IFS=$BEFORE_IFS
 
-        pct $1 postgres -c "DROP DATABASE \"$INSTANCE\""
+        pct $1 postgres -q -c "DROP DATABASE \"$INSTANCE\""
         return 0
     else
         return 1
