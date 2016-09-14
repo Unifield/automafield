@@ -18,7 +18,7 @@ You can use the package management system from your linux distribution.
 
 ```
 cd $HOME
-git clone --recursive https://github.com/hectord/automafield.git
+git clone --recursive https://github.com/Unifield/automafield.git
 echo source $HOME/automafield/script.sh >> ~/.bashrc
 cp automafield/config.sh $HOME/.automafield.config.sh
 ```
@@ -75,7 +75,7 @@ Please reload your ```~/.bashrc``` after each change in automafield's configurat
 ```
 cd $HOME
 rm -rf automafield
-git clone --recursive https://github.com/hectord/automafield.git
+git clone --recursive https://github.com/Unifield/automafield.git
 source myenv_automafield/bin/activate
 cd automafield
 pip install -r requirements.txt
