@@ -899,6 +899,29 @@ pct_loginall()
     done
 }
 
+pct_recentsync()
+{
+    if [[ $# != 2 ]]
+    then
+        echo "Usage: pct_recentsync ct# instance"
+        echo " Description: find the time of the most recent sync"
+        return 1
+    fi
+
+    inst=`echo "$2" | sed 's/[0-9_]*$//g'`
+    source=`pct $1 SYNC_SERVER_XXX -t -c "select id from sync_server_entity where name = '$inst'"`
+    if [ -z "$source" ]; then
+	echo "Unknown instance $inst".
+	return 1
+    fi
+    dt=`pct $1 SYNC_SERVER_XXX -t -c "select write_date from sync_server_update where source = $source order by write_date desc limit 1" | sed 's/^ //'`
+    if [ -z "$dt" ]; then
+	echo "$2: no recent sync date available"
+	return 1
+    fi
+    echo "$inst: last sync $dt"
+}
+
 pct_import()
 {
     if [[ $# != 4 ]]
@@ -996,6 +1019,7 @@ pct_help()
     echo "   pct_upgrade: apply a patch on a computer using the updater"
     echo "   pct_download: downloads dump files and restore them"
     echo "   pct_import: import CSV files in a database"
+    echo "   pct_recentsync: find last connection to sync server"
     echo
     echo "Manage them:"
     echo "   pct_drop: drops a database"
