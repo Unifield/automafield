@@ -637,9 +637,9 @@ pct_restore()
     pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'backup.config'"
     pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'"
     if [ "$1" = "0" ]; then
-	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', name = '/tmp'"
+	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', beforeautomaticsync='f', afterautomaticsync='f', name = '/tmp'"
     else
-	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', name = E'd:\\\\'"
+	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', beforeautomaticsync='f', afterautomaticsync='f', name = E'd:\\\\'"
     fi
 }
 
