@@ -30,5 +30,5 @@ if [ $rc != 0 -o -s $dir/stderr.txt ]; then
     echo "----"
 
     echo
-    echo "Working directory: " $dir
+    echo "Working directory:" $dir
 fi

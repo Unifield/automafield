@@ -1,7 +1,6 @@
 #encoding=utf-8
 
 import datetime
-from paramiko import SSHClient, AutoAddPolicy
 import os, os.path, sys, fnmatch, re, time
 import easywebdav
 import subprocess

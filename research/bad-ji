@@ -1,0 +1,21 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+for ct in 1 2 3
+do
+	i=`pct_all_instances $ct | grep HQ`
+	echo "Instance $i"
+	pct $ct $i -t -c "
+select m.name, sum(l.amount_currency) from account_move_line l, 
+             account_move m, 
+             account_journal j
+             where
+                 l.move_id = m.id and
+                 l.state='valid' and
+                 m.journal_id = j.id and
+                 j.type != 'system'
+             group by m.name, l.move_id
+             having abs(sum(l.amount_currency)) > 0.00001;"
+done
+

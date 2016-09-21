@@ -20,3 +20,6 @@ selenium==2.53.1
 urllib3[secure]
 webdavclient==1.0.5
 wsgiref==0.1.2
+pyOpenSSL==16.1.0
+ndg-httpsclient==0.4.2
+pyasn1==0.1.9
