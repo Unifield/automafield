@@ -7,7 +7,6 @@ import subprocess
 import traceback
 
 from time import mktime
-from datetime import datetime
 
 from zipfile import *
 
@@ -93,9 +92,9 @@ def get_all_files_and_timestamp(webdav):
 
         # We don't take into consideration backups that are too recent.
         #  Otherwise they could be half uploaded (=> corrupted)
-        dt = datetime.fromtimestamp(mktime(t))
+        dt = datetime.datetime.fromtimestamp(mktime(t))
 
-        if abs((datetime.now() - dt).total_seconds()) < 900:
+        if abs((datetime.datetime.now() - dt).total_seconds()) < 900:
             print "SKIP", f.name, "(too recent)"
             continue
 
@@ -312,6 +311,8 @@ for key, values in all_the_files.iteritems():
     if not match_any_wildcard(key):
         continue
 
+    now = datetime.datetime.now()    
+
     ok = False
     dbname = ""
     for filename, f in values:
@@ -323,6 +324,23 @@ for key, values in all_the_files.iteritems():
             print "Fetching %s (in %s)" % (filename, f.name)
             destination_dump_file = fetch_webdav_file(webdav, f)
             dbname = restore_dump(filename, destination_dump_file)
+
+            # If we got here, we didn't get an exception, so it is
+            # a good restore.
+
+            # Check if this backup date is farther back than 5 days.
+            x = dbname.split("_")
+            if len(x) < 2 or len(x[-2]) != 4:
+                logging.warning("Could not find date in DB name %s" % dbname)
+            else:
+                day = int(x[-2][0:2])
+                month = int(x[-2][2:])
+                year = now.year
+                if month == 12:
+                    year -= 1
+                bdate = datetime.datetime(year, month, day)
+                if (now - bdate) > datetime.timedelta(days=5):
+                    logging.warning("%s is older than 5 days." % dbname)
 
             # The values of the keys of all_the_files are in order
             # from newest to oldest. So stop processing once we have
