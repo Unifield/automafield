@@ -394,8 +394,11 @@ pct_password()
     _convert_name $1 $2
     INSTANCENAME=$RESULT
 
-    # Change user id 1's username/password.
-    pct $1 $INSTANCENAME -q -c "UPDATE res_users SET login = '$3', password = '$3' WHERE id = 1" > /dev/null
+    # As of version 2.1-3, logins are stored in lowercase in the database.
+    lpw=`echo $3| tr 'A-Z' 'a-z'`
+
+    pct $1 $INSTANCENAME -q -c "UPDATE res_users SET login = '$lpw', password = '$3' WHERE id = 1" > /dev/null
+
     # To keep the number of plaintext passwords floating around to a
     # minimum, wipe out all the plaintext passwords, set them to the
     # same as the admin user.
