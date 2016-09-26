@@ -11,10 +11,12 @@ MYHWID=
 
 LOGIN_BACKUPS=
 PASSWORD_BACKUPS=
-URL_BACKUPS=
 
 POSTGRES_USERNAME=
 POSTGRES_PASSWORD=
 
 MY_POSTGRES_USERNAME=
 MY_POSTGRES_PASSWORD=
+
+# You may also set PGV to extra options to give to pg_restore and pg_dump. A good choice might be, "PGV=-v" for verbose.
+
