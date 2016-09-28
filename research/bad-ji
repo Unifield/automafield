@@ -2,10 +2,12 @@
 
 . $HOME/automafield/script.sh
 
+export PAGER=cat
+
 for ct in 1 2 3
 do
 	i=`pct_all_instances $ct | grep HQ`
-	echo "Instance $i"
+	echo "JI entries in booking currency that do not add up on instance $i"
 	pct $ct $i -t -c "
 select m.name, sum(l.amount_currency) from account_move_line l, 
              account_move m, 
@@ -17,5 +19,18 @@ select m.name, sum(l.amount_currency) from account_move_line l,
                  j.type != 'system'
              group by m.name, l.move_id
              having abs(sum(l.amount_currency)) > 0.00001;"
+	
+	echo "JI entries in functional currency that do not add up on instance $i"
+	pct $ct $i -t -c "
+select m.name, sum(l.credit-l.debit) from account_move_line l, 
+             account_move m, 
+             account_journal j
+             where
+                 l.move_id = m.id and
+                 l.state='valid' and
+                 m.journal_id = j.id and
+                 j.type != 'system'
+             group by m.name, l.move_id
+             having abs(sum(l.credit-l.debit)) > 0.00001;"
 done
 
