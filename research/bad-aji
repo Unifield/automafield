@@ -15,7 +15,7 @@ while getopts ":l:h" opt; do
 done
 
 export PAGER=cat
-for ct in 3
+for ct in 1 2 3
 do
 	i=`pct_all_instances $ct | grep HQ`
 	echo "AJI/JI mismatch in functional currency on instance $i"
