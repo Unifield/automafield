@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# In order to pick up postgres 8.4, if it is locally installed
+export PATH=$HOME/root/bin:$PATH
+
 ct=$1
 [ "$ct" = "" ] && ct=2
 
