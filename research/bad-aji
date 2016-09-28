@@ -1,0 +1,86 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+while getopts ":l:h" opt; do
+  case $opt in
+      l)
+	  l="LIMIT $OPTARG"
+	  ;;
+      h)
+	  echo "$0 [-l limit]"
+	  exit 1
+      ;;
+  esac
+done
+
+export PAGER=cat
+for ct in 3
+do
+	i=`pct_all_instances $ct | grep HQ`
+	echo "AJI/JI mismatch in functional currency on instance $i"
+	pct $ct $i -c "
+SELECT 
+  account_move.name,
+  avg(account_move_line.credit-account_move_line.debit) JI,
+  sum(account_analytic_line.amount) AJI,
+  abs(avg(account_move_line.credit-account_move_line.debit) - sum(account_analytic_line.amount)) difference
+FROM 
+  account_move, 
+  account_move_line, 
+  account_account,
+  account_analytic_line,
+  account_journal
+WHERE 
+  account_analytic_line.move_id = account_move_line.id and
+  account_move_line.move_id = account_move.id AND
+  account_move_line.account_id = account_account.id AND
+  account_journal.id = account_move.journal_id AND
+  account_journal.type not in ('system', 'revaluation', 'cur_adj') AND
+  account_account.code in (
+    SELECT 
+      account_account.code 
+    FROM 
+      account_account, 
+      account_account_type
+    WHERE 
+      account_account.user_type = account_account_type.id and
+      account_account_type.code in ('income', 'expense')
+  )
+  GROUP BY account_move.name, account_move_line.id
+  HAVING abs(avg(account_move_line.credit-account_move_line.debit) - sum(account_analytic_line.amount)) > 0.00001
+  order by difference desc $l;"
+
+	echo "AJI/JI mismatch in booking currency on instance $i"
+	pct $ct $i -c "
+SELECT 
+  account_move.name,
+  avg(account_move_line.amount_currency) JI,
+  sum(account_analytic_line.amount_currency) AJI,
+  abs(abs(avg(account_move_line.amount_currency)) - abs(sum(account_analytic_line.amount_currency))) difference
+FROM 
+  account_move, 
+  account_move_line, 
+  account_account,
+  account_analytic_line,
+  account_journal
+WHERE 
+  account_analytic_line.move_id = account_move_line.id and
+  account_move_line.move_id = account_move.id AND
+  account_move_line.account_id = account_account.id AND
+  account_journal.id = account_move.journal_id AND
+  account_journal.type not in ('system', 'revaluation', 'cur_adj') AND
+  account_account.code in (
+    SELECT 
+      account_account.code 
+    FROM 
+      account_account, 
+      account_account_type
+    WHERE 
+      account_account.user_type = account_account_type.id and
+      account_account_type.code in ('income', 'expense')
+  )
+  GROUP BY account_move.name, account_move_line.id
+  HAVING abs(abs(avg(account_move_line.amount_currency)) - abs(sum(account_analytic_line.amount_currency))) > 0.00001
+  ORDER BY difference desc $l;"
+done
