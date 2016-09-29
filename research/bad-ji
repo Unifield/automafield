@@ -2,35 +2,60 @@
 
 . $HOME/automafield/script.sh
 
+while getopts ":l:i:h" opt; do
+  case $opt in
+      l)
+	  l="LIMIT $OPTARG"
+	  ;;
+      i)
+	  inst="$OPTARG"
+	  ;;
+      h)
+	  echo "$0 [-l limit]"
+	  exit 1
+      ;;
+  esac
+done
+
 export PAGER=cat
 
 for ct in 1 2 3
 do
-	i=`pct_all_instances $ct | grep HQ`
+        i=`pct_all_instances $ct | grep HQ`
+        if [ -n "$inst" -a "$inst" != "$i" ]; then
+	    continue
+	fi
+	
 	echo "JI entries in booking currency that do not add up on instance $i"
-	pct $ct $i -t -c "
-select m.name, sum(l.amount_currency) from account_move_line l, 
+	pct $ct $i -c "
+select p.name, m.name, sum(l.amount_currency) difference from account_move_line l, 
+             account_period p,
              account_move m, 
              account_journal j
              where
+                 m.period_id = p.id and
                  l.move_id = m.id and
                  l.state='valid' and
                  m.journal_id = j.id and
                  j.type != 'system'
-             group by m.name, l.move_id
-             having abs(sum(l.amount_currency)) > 0.00001;"
+             group by p.name, m.name, l.move_id
+             having abs(sum(l.amount_currency)) > 0.00001
+             order by m.name $l;"
 	
 	echo "JI entries in functional currency that do not add up on instance $i"
-	pct $ct $i -t -c "
-select m.name, sum(l.credit-l.debit) from account_move_line l, 
+	pct $ct $i -c "
+select p.name, m.name, sum(l.credit-l.debit) difference from account_move_line l, 
+             account_period p,
              account_move m, 
              account_journal j
              where
+                 m.period_id = p.id and
                  l.move_id = m.id and
                  l.state='valid' and
                  m.journal_id = j.id and
                  j.type != 'system'
-             group by m.name, l.move_id
-             having abs(sum(l.credit-l.debit)) > 0.00001;"
+             group by p.name, m.name, l.move_id
+             having abs(sum(l.credit-l.debit)) > 0.00001
+             order by m.name $l;"
 done
 
