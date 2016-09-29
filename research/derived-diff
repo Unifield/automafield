@@ -1,0 +1,39 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+while getopts ":l:i:h" opt; do
+  case $opt in
+      l)
+	  l="LIMIT $OPTARG"
+	  ;;
+      i)
+	  inst="$OPTARG"
+	  ;;
+      h)
+	  echo "$0 [-l limit]"
+	  exit 1
+      ;;
+  esac
+done
+
+export PAGER=cat
+
+for ct in 1 2 3
+do
+        i=`pct_all_instances $ct | grep HQ`
+        if [ -n "$inst" -a "$inst" != "$i" ]; then
+	    continue
+	fi
+	
+	echo "JI entries with incorrect derived booking amount on instance $i"
+	pct $ct $i -c "
+select m.name, l.debit_currency, l.credit_currency, l.amount_currency
+from
+  account_move m,
+  account_move_line l
+where
+  l.move_id = m.id and
+  amount_currency-(debit_currency-credit_currency) > 0.00001 $l;"
+done
+

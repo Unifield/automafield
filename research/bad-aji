@@ -77,9 +77,9 @@ WHERE
 SELECT 
   account_period.name,
   account_move.name,
-  -1*avg(account_move_line.amount_currency) JI,
+  avg(account_move_line.debit_currency-account_move_line.credit_currency) JI,
   sum(account_analytic_line.amount_currency) AJI,
-  abs(abs(avg(account_move_line.amount_currency)) - abs(sum(account_analytic_line.amount_currency))) difference
+  abs(abs(avg(account_move_line.debit_currency-account_move_line.credit_currency)) - abs(sum(account_analytic_line.amount_currency))) difference
 FROM 
   account_move,
   account_move_line,
@@ -106,6 +106,6 @@ WHERE
   ) and
   account_move.name not like 'SS125%'
   GROUP BY account_period.name, account_move.name, account_move_line.id
-  HAVING abs(abs(avg(account_move_line.amount_currency)) - abs(sum(account_analytic_line.amount_currency))) > 0.00001
+  HAVING abs(abs(avg(account_move_line.debit_currency-account_move_line.credit_currency)) - abs(sum(account_analytic_line.amount_currency))) > 0.00001
   ORDER BY difference desc, account_move.name $l;"
 done

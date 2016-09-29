@@ -28,7 +28,7 @@ do
 	
 	echo "JI entries in booking currency that do not add up on instance $i"
 	pct $ct $i -c "
-select p.name, m.name, sum(l.amount_currency) difference from account_move_line l, 
+select p.name period, m.name, sum(l.credit_currency-l.debit_currency) difference from account_move_line l, 
              account_period p,
              account_move m, 
              account_journal j
@@ -39,12 +39,12 @@ select p.name, m.name, sum(l.amount_currency) difference from account_move_line 
                  m.journal_id = j.id and
                  j.type != 'system'
              group by p.name, m.name, l.move_id
-             having abs(sum(l.amount_currency)) > 0.00001
+             having abs(sum(l.credit_currency-l.debit_currency)) > 0.00001
              order by m.name $l;"
 	
 	echo "JI entries in functional currency that do not add up on instance $i"
 	pct $ct $i -c "
-select p.name, m.name, sum(l.credit-l.debit) difference from account_move_line l, 
+select p.name period, m.name, sum(l.credit-l.debit) difference from account_move_line l, 
              account_period p,
              account_move m, 
              account_journal j
