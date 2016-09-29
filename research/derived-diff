@@ -21,8 +21,9 @@ export PAGER=cat
 
 for ct in 1 2 3
 do
-        i=`pct_all_instances $ct | grep HQ`
-        if [ -n "$inst" -a "$inst" != "$i" ]; then
+    for i in `pct_all_instances $ct`
+    do
+	if [ -n "$inst" -a "$inst" != "$i" ]; then
 	    continue
 	fi
 	
@@ -34,6 +35,7 @@ from
   account_move_line l
 where
   l.move_id = m.id and
-  amount_currency-(debit_currency-credit_currency) > 0.00001 $l;"
+  abs(abs(amount_currency) - abs(debit_currency-credit_currency)) > 0.00001  $l;"
+    done
 done
 
