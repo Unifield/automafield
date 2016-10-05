@@ -1,0 +1,29 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+gn=$1
+if [ -z "$gn" ]; then
+    echo "expected group name as first argument"
+    exit 1
+fi
+
+for ct in 1 2 3
+do
+	for i in `pct_all_instances $ct`
+	do
+		pct $ct $i -t -c "SELECT 
+  '$i',
+  res_users.name, 
+  res_users.login
+FROM 
+  public.res_groups, 
+  public.res_users, 
+  public.res_groups_users_rel
+WHERE 
+  res_groups_users_rel.uid = res_users.id AND
+  res_groups_users_rel.gid = res_groups.id AND
+  res_groups.name = '$gn';
+" | cat
+	done
+done
