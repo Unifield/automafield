@@ -639,6 +639,7 @@ pct_restore()
     # remove all the automatic tasks
     pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'backup.config'"
     pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'sync.client.entity'"
+    pct $1 $DBNAME -q -c "UPDATE ir_cron SET active = 'f' WHERE model = 'stock.mission.report'"
     if [ "$1" = "0" ]; then
 	pct $1 $DBNAME -q -c "UPDATE backup_config SET beforemanualsync='f', beforepatching='f', aftermanualsync='f', beforeautomaticsync='f', afterautomaticsync='f', name = '/tmp'"
     else
@@ -911,7 +912,7 @@ pct_recentsync()
         return 1
     fi
 
-    inst=`echo "$2" | sed 's/[0-9_]*$//g'`
+    inst=`echo "$2" | cut -d_ -f1`
     source=`pct $1 SYNC_SERVER_XXX -t -c "select id from sync_server_entity where name = '$inst'"`
     if [ -z "$source" ]; then
 	echo "Unknown instance $inst".
