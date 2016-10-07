@@ -2,42 +2,66 @@
 
 import sys, os, argparse, base64, psycopg2, StringIO
 
+def _required(args, req):
+    err = 0
+    for r in req:
+        if getattr(args, r) is None:
+            print 'Argument %s is required for this sub-command.' % r
+            err += 1
+    return err == 0
+
 def main():
     parser = argparse.ArgumentParser(prog='ufload')
+    parser.add_argument("-db-name", help="Postgres database name")
     parser.add_argument("-db-host", help="Postgres host")
     parser.add_argument("-db-port", help="Postgres port")
     parser.add_argument("-db-user", help="Postgres user")
+    parser.add_argument("-n", dest="n", action="store_true", help="Just show what it would do")
     args = parser.parse_args()
-        
+    _required(args, [ 'db_host', 'db_name', 'db_user' ])
+    
     if 'PGPASSWORD' not in os.environ:
         print "Set the PGPASSWORD environment variable."
         sys.exit(1)
     
     conn = psycopg2.connect(database=args.db_name,
                             user=args.db_user,
-                            host="localhost")
+                            host=args.db_host)
 
     cur = conn.cursor()
+    ids=[]
     cur.execute("select id from ir_attachment")
     for record in cur:
-        ids.append(record[0])
+        ids.append(str(record[0]))
     cur.close()
     
     # Use a named cursor to minimize the data sent in reply to the
     # exec. Using a server-side cursor emans we stream the datas as
     # we write them to disk.
     cur = conn.cursor('datas')
-    cur.execute("select id, datas from ir_attachment where id in (%s)",
-                ids)
+    cur.execute('select id, datas from ir_attachment where id in (%s)'%",".join(ids))
     for record in cur:
+        id = record[0]
+        
         # Put 100 files at a time into each directory.
-        d = "%d"%(record[0]/100)
-        if not os.path.exist(d):
+        d = "%d"%(id/100)
+        if not os.path.exists(d):
             os.mkdir(d)
 
-        with open(os.path.join(d, "%d.bin"%record[0]), "wb") as f:
+        fn = os.path.join(d, "%d.bin"%id)
+        print "Exporting attachment to %s" % fn
+        with open(fn, "wb") as f:
             out = psycopg2.BINARY(str(record[1]), cur)
             base64.decode(StringIO.StringIO(out), f)
+
+        if args.n:
+            print "Would zero out attachment id %s" % id;
+        else:
+            # Put in 'Ia==', which is one space, base64 encoded. We expected to put
+            # '' in here, but the OpenERP netrpc layer (WTF?) flips out when it gets
+            # that, instead of returning a zero length attachments, as you might expect it to.
+            conn.cursor().execute("update ir_attachment set datas = 'Ia==' where id = %s", id)
     cur.close()
-    
+
 main()
+
