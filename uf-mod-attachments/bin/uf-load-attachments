@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+
+import sys, os, argparse, base64, psycopg2, StringIO
+
+def main():
+    parser = argparse.ArgumentParser(prog='ufload')
+    parser.add_argument("-db-host", help="Postgres host")
+    parser.add_argument("-db-user", help="Postgres user")
+    parser.add_argument("-db-name", help="Postgres database")
+    parser.add_argument('ids', nargs='+', help='The ids to process')
+    args = parser.parse_args()
+        
+    if 'PGPASSWORD' not in os.environ:
+        print "Set the PGPASSWORD environment variable."
+        sys.exit(1)
+    
+    conn = psycopg2.connect(database=args.db_name,
+                            user=args.db_user,
+                            host=args.db_host)
+
+    for idstr in args.ids:
+        id = int(idstr)
+        
+        # The files are split into directories.
+        d = "%d"%(id/100)
+        fn = os.path.join(d, "%d.bin"%id)
+
+        print "Reading file", fn
+        with open(fn, "rb") as f:
+            attach = f.read()
+            encodedAttach = base64.encodestring(attach)
+
+            # Check lengths before writing
+            cur = conn.cursor()
+            cur.execute("select size from ir_attachment where id = %s", (id,))
+            dblen = cur.fetchone()
+            cur.close()
+
+            x = get_size(len(encodedAttach))
+            if x != dblen[0]:
+                print "Lengths do not match for id %d (%d != %d). Skipping." % (id, x, dblen[0])
+            else:
+                update = "update ir_attachment set datas=%s where id = %s;"
+                cur = conn.cursor().execute(update, (psycopg2.Binary(encodedAttach), id))
+                conn.commit()
+
+# ir.attachment.size is "human readable size". It is not perfect
+# to compare these, but it's what we've got, so we use it as a failsafe.
+# see ir_attachment.py get_size for the original
+def get_size(sz):
+    return round(float(sz)/1024)
+
+main()
