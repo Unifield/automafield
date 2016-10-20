@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# This script demonstrates a technique for pulling data together from
+# many different instances all into one table, which can then be
+# queried interactively.
+
+. $HOME/automafield/script.sh
+
+set -e
+pct 0 postgres -c 'create extension if not exists dblink;'
+pct 0 postgres -c 'drop table if exists actives;'
+pct 0 postgres -c 'CREATE TABLE actives (
+  instance character varying(20),
+  xmlid_code character varying(18),
+  active boolean )'
+
+for i in `pct_all_instances 2`
+do
+    if [ "$i" = "SYNC_SERVER_XXX" ]; then
+	continue
+    fi
+    echo instance $i
+    # not in 4,5 means "not in (Local, Temporary)"
+    pct 0 postgres -c " 
+insert into actives 
+select '$i', xmlid_code, active
+from dblink('hostaddr=10.1.43.165 dbname=$i user=$POSTGRES_USERNAME password=$POSTGRES_PASSWORD', 
+'select xmlid_code, active from product_product where international_status not in (4, 5) order by xmlid_code') 
+as t1(xmlid_code character varying(18), active boolean);"
+done
+
+# To query it:
+#
+# Find out how many instances we are talking about:
+#select distinct instance from actives;
+# 27 rows
+#
+# All products which have a difference between missions
+#select xmlid_code from (select xmlid_code, sum(CASE WHEN active then 1 ELSe 0 END) as x
+#from actives group by xmlid_code order by 2 asc) foo where x < 27 and x > 0;
+#
+# when sum is 0, that means all are inactive
+# when sum is 27 that means all are active
+# so 1-26 are the interesting ones
+#
+# export all affected products to CSV
+#select * from actives where xmlid_code in (
+#	select xmlid_code from (select xmlid_code, sum(CASE WHEN active then 1 ELSe 0 END) as x
+#	from actives group by xmlid_code order by 2 asc) foo where x < 27 and x > 0);

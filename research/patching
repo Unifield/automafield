@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+for ct in 1 2 3
+do
+	for i in `pct_all_instances $ct`
+	do
+		pct $ct $i -t -c "select '$i',automatic_patching from sync_client_sync_server_connection" | cat
+	done
+done
