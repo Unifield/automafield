@@ -7,7 +7,7 @@ echo "content-type: text/html"
 echo
 
 db_list() {
-	dbs=`$psql -c "select datname from pg_database where datistemplate = 'f'" 2>&1`
+	dbs=`$psql -c "select datname from pg_database where datistemplate = 'f'order by datname" 2>&1`
 	if [ $? != 0 ]; then
 		echo error: $dbs
 		exit 1
