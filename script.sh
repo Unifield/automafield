@@ -107,7 +107,7 @@ pct_download() {
         ;;
 
     OCG)
-        BACKUPDIR=UNIFIELD-BACKUP
+        BACKUPDIR=OCG_Backups
         LOGIN=$MY_LOGIN_OWNCLOUD
         PASSWORD=$MY_PASSWORD_OWNCLOUD
         ;;
