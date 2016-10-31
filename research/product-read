@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+
+username = 'admin' #the user
+pwd = 'admin'      #the password of the user
+dbname = 'HQ1C1'    #the database
+
+# Get the uid
+sock_common = xmlrpclib.ServerProxy ('http://localhost:8069/xmlrpc/common')
+uid = sock_common.login(dbname, username, pwd)
+transport = None
+encoding = None
+verbose = True
+sock = xmlrpclib.ServerProxy('http://localhost:8069/xmlrpc/object', transport, encoding)
+
+ids = sock.execute(dbname, uid, pwd, 'product.product', 'search', [ ('default_code', '=', 'DINFDEXT1N5') ])
+pid = ids[0]
+
+fields = ['name']
+data = sock.execute(dbname, uid, pwd, 'product.product', 'read', pid, fields, { 'lang': 'fr_MF' })
+print "find it in fr_MF", data
+

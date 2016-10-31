@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+
+import sys
+import xmlrpclib
+
+username = 'admin' #the user
+pwd = 'admin'      #the password of the user
+dbname = sys.argv.pop()
+
+sock_common = xmlrpclib.ServerProxy ('http://localhost:8069/xmlrpc/common')
+uid = sock_common.login(dbname, username, pwd)
+transport = None
+encoding = None
+verbose = True
+sock = xmlrpclib.ServerProxy('http://localhost:8069/xmlrpc/object', transport, encoding)
+
+conn_id = sock.execute(dbname, uid, pwd, 'sync.client.sync_server_connection', 'search', [])
+print conn_id
+res = sock.execute(dbname, uid, pwd, 'sync.client.sync_server_connection', 'connect')
+print "connect:", res
+
+res = sock.execute(dbname, uid, pwd, 'sync.client.entity', 'sync')
+print "sync:", res

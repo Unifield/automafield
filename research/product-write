@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import xmlrpclib
+
+def ctx(l):
+    return { 'lang': l }
+
+username = 'admin' #the user
+pwd = 'admin'      #the password of the user
+dbname = 'HQ1'    #the database
+
+sock_common = xmlrpclib.ServerProxy ('http://localhost:8069/xmlrpc/common')
+uid = sock_common.login(dbname, username, pwd)
+transport = None
+encoding = None
+verbose = True
+sock = xmlrpclib.ServerProxy('http://localhost:8069/xmlrpc/object', transport, encoding)
+
+ids = sock.execute(dbname, uid, pwd, 'product.product', 'search', [ ('default_code', '=', 'DINFDEXT1N5') ])
+pid = ids[0]
+
+fields = ['name']
+
+data = sock.execute(dbname, uid, pwd, 'product.product', 'read', pid, fields, ctx('en_MF'))
+print "HQ1 find it in english", data
+
+data = sock.execute(dbname, uid, pwd, 'product.product', 'read', pid, fields, ctx('fr_MF'))
+print "HQ1 find it in french", data
+
+# Add a star onto the end
+data['name'] = data['name'] + "*"
+del data['id']
+
+print "write into french", data
+res = sock.execute(dbname, uid, pwd, 'product.product', 'write', pid, data, ctx('fr_MF'))
+print "write it in french:", res
+
