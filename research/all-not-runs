@@ -1,0 +1,18 @@
+#!/bin/bash
+
+model=""
+if [ -n "$1" ]; then
+	model="model = '$1' and"
+fi
+
+. $HOME/automafield/script.sh
+
+echo "instance,sdref,log"
+
+for ct in 1 2 3
+do
+	for i in `pct_all_instances $ct`
+	do
+		pct $ct $i -t -c "\\copy (select '$i',sdref,log from sync_client_update_received where $model run = 'f') to STDOUT with CSV"
+	done
+done
