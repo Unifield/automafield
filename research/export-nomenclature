@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+ct=2
+db=OCBHT101_1411_1806
+
+pct $ct $db -c "\\copy (select msfid, name as text_en, (SELECT ir_translation."value" from ir_translation WHERE product_nomenclature.id=ir_translation.res_id AND ir_translation.lang = 'fr_MF' AND ir_translation.name = 'product.nomenclature,name') as text_fr from product_nomenclature) to STDOUT with CSV HEADER"
+

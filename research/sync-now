@@ -6,6 +6,8 @@ import xmlrpclib
 username = 'admin' #the user
 pwd = 'admin'      #the password of the user
 dbname = sys.argv.pop()
+if not dbname:
+	raise RuntimeError("need dbname as first argument")
 
 sock_common = xmlrpclib.ServerProxy ('http://localhost:8069/xmlrpc/common')
 uid = sock_common.login(dbname, username, pwd)
