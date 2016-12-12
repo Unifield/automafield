@@ -5,16 +5,27 @@ import xmlrpclib
 
 username = 'admin' #the user
 pwd = 'admin'      #the password of the user
-dbname = sys.argv.pop()
-if not dbname:
-	raise RuntimeError("need dbname as first argument")
 
-sock_common = xmlrpclib.ServerProxy ('http://localhost:8069/xmlrpc/common')
+host = sys.argv[1]
+if not host:
+	raise RuntimeError("need host as first argument")
+dbname = sys.argv[2]
+if not dbname:
+	raise RuntimeError("need dbname as 2nd argument")
+
+if host == 'localhost':
+        url='http://localhost:8069/xmlrpc'
+else:
+        url='https://%s/xmlrpc' % host
+        
+print "connect to", url
+
+sock_common = xmlrpclib.ServerProxy (url + "/common")
 uid = sock_common.login(dbname, username, pwd)
 transport = None
 encoding = None
 verbose = True
-sock = xmlrpclib.ServerProxy('http://localhost:8069/xmlrpc/object', transport, encoding)
+sock = xmlrpclib.ServerProxy(url + "/object", transport, encoding)
 
 conn_id = sock.execute(dbname, uid, pwd, 'sync.client.sync_server_connection', 'search', [])
 print conn_id
