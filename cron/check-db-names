@@ -1,0 +1,31 @@
+#!/bin/sh
+
+all_dbs () {
+	psql -t -c "select datname from pg_database where datdba in (select usesysid from pg_user where usename = '$LOGNAME');" postgres
+}
+
+limitdays=5
+limit=`date --date="$limitdays days ago" +%Y%m%d`
+
+for db in `all_dbs`
+do
+	# Look for ufload temp tables with no current import running.
+	if echo "$db" | egrep -q '_[0-9]{8}_[0-9]{4}_[0-9]+$'; then
+		pid=`echo "$db" | perl -F_ -lane 'print $F[-1]'`
+		if [ ! -d /proc/$pid ]; then
+			echo "Database $db should be cleaned up."
+		fi
+		continue
+	fi
+
+	if echo "$db" | egrep -q '_[0-9]{8}_[0-9]{4}$'; then
+		# Convert OCG_NE1_COO_20161210_2102 into 20161210
+		d=`echo "$db" | perl -F_ -lane 'print $F[-2]'`
+		if [ "$d" -lt "$limit" ]; then
+			old=`expr $limit - $d`
+			echo "Database $db is more than $limitdays days old." 
+		fi
+	else
+		echo "Database $db is an unknown name format."
+	fi
+done
