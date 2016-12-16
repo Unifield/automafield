@@ -1,0 +1,36 @@
+#!/bin/sh
+
+uf5=164.132.149.183
+
+all_dbs () {
+	ssh production-dbs@$uf5 psql -t -c "\"select datname from pg_database where datdba in (select usesysid from pg_user where usename = 'production-dbs');\"" postgres
+}
+
+ct () {
+	PGPASSWORD=unifield_dev psql -h localhost -U unifield_dev -t -c "select count(*) from $1;" archive
+}
+
+rpt () {
+	after=`ct $1`
+	x=`expr $after - $2`
+	echo "$1: $x new"
+}
+
+common='hostaddr=127.0.0.1 port=15432 user=production-dbs password=production-dbs'
+
+beforeE=`ct operations_event`
+beforeC=`ct operations_count`
+
+ssh production-dbs@$uf5 -L15432:127.0.0.1:5432 perl -e sleep &
+sshpid=$!
+
+for db in `all_dbs | grep -v ^archive`
+do
+	dsn="$common dbname=$db"
+	ufload archive -from-dsn "$dsn"
+done
+kill $sshpid
+
+rpt operations_event $beforeE
+rpt operations_count $beforeC
+
