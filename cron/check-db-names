@@ -23,7 +23,7 @@ do
 		d=`echo "$db" | perl -F_ -lane 'print $F[-2]'`
 		if [ "$d" -lt "$limit" ]; then
 			old=`expr $limit - $d`
-			echo "Database $db is more than $limitdays days old." 
+			echo "Database $db is $limitdays or more days old." 
 		fi
 	else
 		echo "Database $db is an unknown name format."

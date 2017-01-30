@@ -1,0 +1,10 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+ct=$1
+for i in `pct_all_instances $ct`
+do
+    # partners: name, partner_type, locally_created, sdref
+    pct $ct $i -t -c "\\copy (select '$i', p.name, p.partner_type, p.locally_created, p.active, sd.name from res_partner p, ir_model_data sd where sd.model='res.partner' and sd.res_id=p.id) to STDOUT with CSV"
+done

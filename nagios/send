@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [ "$1" = "-n" ]; then
+	echo=echo
+fi
+
+for i in uf5-hw uf5 uf6
+do
+	host=$i.unifield.org
+	echo $host
+	$echo scp nrpe_local.cfg root@$host:/etc/nagios
+	$echo ssh root@$host service nagios-nrpe-server restart
+done

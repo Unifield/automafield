@@ -103,8 +103,7 @@ WHERE
     WHERE 
       account_account.user_type = account_account_type.id and
       account_account_type.code in ('income', 'expense')
-  ) and
-  account_move.name not like 'SS125%'
+  )
   GROUP BY account_period.name, account_move.name, account_move_line.id
   HAVING abs(abs(avg(account_move_line.debit_currency-account_move_line.credit_currency)) - abs(sum(account_analytic_line.amount_currency))) > 0.00001
   ORDER BY difference desc, account_move.name $l;"
