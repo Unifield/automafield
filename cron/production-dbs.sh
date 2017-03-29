@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# This is used on the production-dbs@uf5 runbot
+# This is used on the production-dbs@uf6 runbot
 
 . $HOME/venv/bin/activate
 
