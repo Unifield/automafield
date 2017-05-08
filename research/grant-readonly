@@ -1,0 +1,4 @@
+for i in product_international_status product_justification_code product_heat_sensitive product_cold_chain product_nomenclature product_product product_template product_category account_account ir_translation stock_mission_report_line product_status res_currency_rate
+do
+	echo "grant select on $i to unidata_ro;"
+done

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+ct=$1
+for i in `pct_all_instances $ct`
+do
+    pct $ct $i -t -c "\\copy (select '$i', name, usage, location_category, active from stock_location) to STDOUT with CSV"
+done

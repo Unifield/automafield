@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+pct $1 $2 -c "\\copy (select id, name from res_partner where name like E'%\n%') to STDOUT CSV"
