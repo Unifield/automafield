@@ -13,11 +13,7 @@ dbname = sys.argv[2]
 if not dbname:
 	raise RuntimeError("need dbname as 2nd argument")
 
-if host == 'localhost':
-        url='http://localhost:8069/xmlrpc'
-else:
-        url='https://%s/xmlrpc' % host
-        
+url='http://%s:8069/xmlrpc' % host
 print "connect to", url
 
 sock_common = xmlrpclib.ServerProxy (url + "/common")

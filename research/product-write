@@ -8,15 +8,20 @@ def ctx(l):
 username = 'admin' #the user
 pwd = 'admin'      #the password of the user
 dbname = 'HQ1'    #the database
+port = 8069
 
-sock_common = xmlrpclib.ServerProxy ('http://localhost:8069/xmlrpc/common')
+sock_common = xmlrpclib.ServerProxy ('http://localhost:%d/xmlrpc/common' % port)
 uid = sock_common.login(dbname, username, pwd)
 transport = None
 encoding = None
 verbose = True
-sock = xmlrpclib.ServerProxy('http://localhost:8069/xmlrpc/object', transport, encoding)
+sock = xmlrpclib.ServerProxy('http://localhost:%d/xmlrpc/object' % port, transport, encoding)
 
-ids = sock.execute(dbname, uid, pwd, 'product.product', 'search', [ ('default_code', '=', 'DINFDEXT1N5') ])
+prod='DORAALBE4T-'
+ids = sock.execute(dbname, uid, pwd, 'product.product', 'search', [ ('default_code', '=', prod) ])
+if len(ids) == 0:
+	raise RuntimeError("product %s not found" % prod)
+
 pid = ids[0]
 
 fields = ['name']
@@ -29,9 +34,9 @@ print "HQ1 find it in french", data
 
 # Add a star onto the end
 data['name'] = data['name'] + "*"
-del data['id']
 
 print "write into french", data
+del data['id']
 res = sock.execute(dbname, uid, pwd, 'product.product', 'write', pid, data, ctx('fr_MF'))
 print "write it in french:", res
 
