@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for i in postgres root etc opt jira-prod
+for i in postgres root etc opt jira-prod home update_received_to_send
 do
         rdiff-backup --remove-older-than 30D --force -v2 backup::$i
 done
