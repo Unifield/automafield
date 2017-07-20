@@ -7,7 +7,7 @@
 
 set -e
 
-DBLIST="jira_prod ops_archive"
+DBLIST="jira_prod ops_archive ufdb jasperserver"
 
 # - process the export of all databases in the list
 # 	- append the date and time on the filename
