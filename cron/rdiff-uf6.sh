@@ -1,5 +1,10 @@
 #!/bin/sh
 
+for i in postgres root etc opt jira-prod
+do
+        rdiff-backup --remove-older-than 30D --force -v2 backup::$i
+done
+
 rdiff-backup /backup/postgres backup::postgres
 rdiff-backup /root backup::root
 rdiff-backup /etc backup::etc
