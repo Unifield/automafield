@@ -1,0 +1,7 @@
+# The following must be MANUALLY added on the end of sudoers
+# because some of these checks require root, but nrpe runs as
+# username nagios.
+
+nagios          ALL=(ALL) NOPASSWD: /usr/sbin/smartctl
+nagios          ALL=(ALL) NOPASSWD: /usr/lib/nagios/plugins/check_procs
+nagios		ALL=(ALL) NOPASSWD: /etc/nagios/check_postgres/check_postgres.pl
