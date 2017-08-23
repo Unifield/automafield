@@ -1,0 +1,185 @@
+#!/usr/bin/env python
+
+# This script connects to an instance via XML-RPC and dumps the
+# entire nomenclature table of the isntance in the same format
+# expected on the "Nomenclature (single level)" tab in the Product
+# Creation spreadsheet (see US-1286).
+
+# The output from this script is a CSV file that is loaded
+# into the spreadsheet onto the page called "Nomclatures (single level)".
+# Then the ranges {family,group,root}{From,To} need to be updated.
+# Then the tables need to be sorted on the first column.
+# Then the computeNomen macro has to be manually run to update
+# the other Nomenclature sheet.
+
+# This whole system should be replaced with a Unifield-only system.
+
+import xmlrpclib, sys
+import argparse
+
+# From: https://docs.python.org/2.7/library/csv.html
+import csv, codecs, cStringIO
+
+class UnicodeWriter:
+    """
+    A CSV writer which will write rows to CSV file "f",
+    which is encoded in the given encoding.
+    """
+
+    def __init__(self, f, dialect=csv.excel, encoding="utf-8", **kwds):
+        # Redirect output to a queue
+        self.queue = cStringIO.StringIO()
+        self.writer = csv.writer(self.queue, dialect=dialect, **kwds)
+        self.stream = f
+        self.encoder = codecs.getincrementalencoder(encoding)()
+
+    def writerow(self, row):
+        self.writer.writerow([s.encode("utf-8") for s in row])
+        # Fetch UTF-8 output from the queue ...
+        data = self.queue.getvalue()
+        data = data.decode("utf-8")
+        # ... and reencode it into the target encoding
+        data = self.encoder.encode(data)
+        # write to the target stream
+        self.stream.write(data)
+        # empty queue
+        self.queue.truncate(0)
+
+    def writerows(self, rows):
+        for row in rows:
+            self.writerow(row)
+            
+parser = argparse.ArgumentParser(description='Export nomenclatures')
+parser.add_argument('--user')
+parser.add_argument('--pw')
+parser.add_argument('--host')
+parser.add_argument('--db')
+
+args = parser.parse_args()
+
+sock_common = xmlrpclib.ServerProxy ('http://%s:8069/xmlrpc/common' % args.host, allow_none=True)
+uid = sock_common.login(args.db, args.user, args.pw)
+transport = None
+encoding = None
+verbose = False
+sock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/object' % args.host,
+                             transport, encoding, verbose, allow_none=True)
+
+main = list()
+mainids = sock.execute(args.db, uid, args.pw,
+                   'product.nomenclature', 'search',
+                   [ ('parent_id', '=', None) ])
+for record in sock.execute(args.db, uid, args.pw,
+                           'product.nomenclature', 'read',
+                           mainids, [ 'name' ]):
+    main.append(record['name'])
+
+group = list()
+groupids = list()
+g = {}
+for mid in mainids:
+    ids = sock.execute(args.db, uid, args.pw,
+                   'product.nomenclature', 'search',
+                       [ ('parent_id', '=', mid) ])
+    for record in sock.execute(args.db, uid, args.pw,
+                               'product.nomenclature', 'read',
+                               ids, [ 'msfid','parent_id']):
+        id = record['id']
+        g[id] = record['msfid']
+        groupids.append(id)
+        res = sock.execute(args.db, uid, args.pw,
+                            'product.nomenclature',
+                            'read', id, [ 'name' ], { 'lang': 'en_MF' })
+        en = res['name']
+        group.append([record['msfid'], record['parent_id'][1], en, ''])
+
+family = list()
+familyids = list()
+f = {}
+for gid in groupids:
+    ids = sock.execute(args.db, uid, args.pw,
+                   'product.nomenclature', 'search',
+                       [ ('parent_id', '=', gid) ])
+    for record in sock.execute(args.db, uid, args.pw,
+                               'product.nomenclature', 'read',
+                               ids, [ 'msfid','parent_id']):
+        id = record['id']
+        f[id] = record['msfid']
+        familyids.append(id)
+        
+        res = sock.execute(args.db, uid, args.pw,
+                            'product.nomenclature',
+                            'read', id, [ 'name' ], { 'lang': 'en_MF' })
+        en = res['name']
+        family.append([record['msfid'], g[record['parent_id'][0]], en, ''])
+
+root = list()
+for fid in familyids:
+    ids = sock.execute(args.db, uid, args.pw,
+                   'product.nomenclature', 'search',
+                       [ ('parent_id', '=', fid) ])
+    for record in sock.execute(args.db, uid, args.pw,
+                               'product.nomenclature', 'read',
+                               ids, [ 'msfid','parent_id']):
+        id = record['id']
+        
+        res = sock.execute(args.db, uid, args.pw,
+                            'product.nomenclature',
+                            'read', id, [ 'name' ], { 'lang': 'en_MF' })
+        en = res['name']
+        root.append([record['msfid'], f[record['parent_id'][0]], en, ''])
+
+c = UnicodeWriter(sys.stdout)
+i = 0
+stop = False
+stopMain, stopGroup, stopFamily, stopRoot = False, False, False, False
+while not stop:
+    row = list()
+    
+    if i >= len(main):
+        stopMain = True
+        row = [ '' ]
+    else:
+        row = [ main[i] ]
+
+    if i >= len(group):
+        stopGroup = True
+        row.append('')
+        row.append('')
+        row.append('')
+        row.append('')
+    else:
+        row.append(group[i][0])
+        row.append(group[i][1])
+        row.append(group[i][2])
+        row.append(group[i][3])
+        
+    if i >= len(family):
+        stopFamily = True
+        row.append('')
+        row.append('')
+        row.append('')
+        row.append('')
+    else:
+        row.append(family[i][0])
+        row.append(family[i][1])
+        row.append(family[i][2])
+        row.append(family[i][3])
+        
+    if i >= len(root):
+        stopRoot = True
+        row.append('')
+        row.append('')
+        row.append('')
+        row.append('')
+    else:
+        row.append(root[i][0])
+        row.append(root[i][1])
+        row.append(root[i][2])
+        row.append(root[i][3])
+        
+    if stopMain and stopGroup and stopFamily and stopRoot:
+        stop = True
+
+    c.writerow(row)
+    i += 1
