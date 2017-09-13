@@ -12,10 +12,16 @@ if [ ! -f $HOME/.duplicity-venv/bin/activate ]; then
 		exit 1
 	fi
 
+	py=/usr/bin/python2.7
+	# For uf5's weird install.
+	[ ! -f $py ] && pw=/usr/local/python27/bin/python2.7
+
 	set -e
-	virtualenv -p python2.7 $HOME/.duplicity-venv
+	virtualenv -p $py $HOME/.duplicity-venv
 	. $HOME/.duplicity-venv/bin/activate
-	pip install python-swiftclient python-keystoneclient https://launchpad.net/duplicity/0.7-series/0.7.14/+download/duplicity-0.7.14.tar.gz
+	pip install python-swiftclient python-keystoneclient
+	apt-get install -y build-essential librsync-dev
+	pip install https://launchpad.net/duplicity/0.7-series/0.7.14/+download/duplicity-0.7.14.tar.gz
 	echo "Virtualenv $HOME/.duplicity-venv installed successfully."
 	exit 0
 

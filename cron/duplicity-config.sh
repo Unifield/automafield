@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# This file should be moved to $HOME and customized.
+# This file should be moved to $HOME/.duplicity-config.sh
+# and then customized.
 
 # These are the same on all hosts:
 export SWIFT_AUTHURL="https://auth.cloud.ovh.net/v2.0/"
