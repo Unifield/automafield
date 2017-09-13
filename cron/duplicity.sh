@@ -7,10 +7,21 @@ fi
 . $HOME/.duplicity-config.sh
 
 if [ ! -f $HOME/.duplicity-venv/bin/activate ]; then
-	echo "No $HOME/.duplicity-venv, stopping."
-	exit 1
+	if [ "$1" != "build-venv" ]; then
+		echo "No $HOME/.duplicity-venv, use \"$0 build-venv\" to build it."
+		exit 1
+	fi
+
+	set -e
+	virtualenv -p python2.7 $HOME/.duplicity-venv
+	. $HOME/.duplicity-venv/bin/activate
+	pip install python-swiftclient python-keystoneclient https://launchpad.net/duplicity/0.7-series/0.7.14/+download/duplicity-0.7.14.tar.gz
+	echo "Virtualenv $HOME/.duplicity-venv installed successfully."
+	exit 0
+
+else
+	. $HOME/.duplicity-venv/bin/activate
 fi
-. $HOME/.duplicity-venv/bin/activate
 
 backupAll () {
 	for i in $*
