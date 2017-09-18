@@ -44,8 +44,9 @@ backupOne () {
 	# Other arguments are extra args to tar (i.e. exclusions)
 
 	container=swift://`hostname -s`$dir
-	echo Running: duplicity --asynchronous-upload --volsize 200 $* $dir $container
-	duplicity --asynchronous-upload --volsize 200 $* $dir $container
+	echo Running: duplicity --full-if-older-than 5D --asynchronous-upload --volsize 200 $* $dir $container
+	duplicity --full-if-older-than 5D \
+		  --asynchronous-upload --volsize 200 $* $dir $container
 
 	# Check objects in this server's container for ones older than
 	# the limit, and delete them.
