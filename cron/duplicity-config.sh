@@ -30,3 +30,10 @@ export SWIFT_REGIONNAME="qqq"
 # backups.
 #
 export PASSPHRASE=cd21ffcae529b3538cbe3ea1246f0be9
+
+# These are needed to make the swift commandline tool work as well.
+export OS_AUTH_URL=$SWIFT_AUTHURL
+export OS_USERNAME=$SWIFT_USERNAME
+export OS_PASSWORD=$SWIFT_PASSWORD
+export OS_TENANT_NAME=$SWIFT_TENANTNAME
+export OS_REGION_NAME=$SWIFT_REGIONNAME
