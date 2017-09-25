@@ -1,5 +1,5 @@
 #!/bin/sh
 
 . $HOME/venv/bin/activate
-ufload -oc UNIFIELD-BACKUP restore -adminpw "XXX" -load-sync-server
+ufload -oc OCG-Backup restore -adminpw "XXX" -load-sync-server
 
