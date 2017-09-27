@@ -6,7 +6,7 @@
 
 for oc in OCG OCB OCA
 do
-	ufload -oc $oc restore -adminuser tempo -adminpw "@tempo21@"
+	ufload -oc $oc restore -load-sync-server -adminuser tempo -adminpw "XXX"
 done
 
 $HOME/automafield/cron/save_updates.sh | \
