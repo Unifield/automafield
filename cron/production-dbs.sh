@@ -2,7 +2,7 @@
 
 # This is used on the production-dbs@uf6 runbot
 
-. $HOME/venv/bin/activate
+. $HOME/venv27/bin/activate
 
 for oc in OCG OCB OCA
 do
