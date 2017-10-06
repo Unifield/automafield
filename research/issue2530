@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+for ct in 2
+do
+	for i in `pct_all_instances $ct`
+	do
+	    pct $ct $i -t -c "\\copy (select '$i','|'||default_code||'|',active from product_product where default_code like E'%\t%') to STDOUT with CSV " | cat
+	done
+done
