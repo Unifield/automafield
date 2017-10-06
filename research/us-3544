@@ -1,0 +1,18 @@
+#!/bin/bash
+
+. $HOME/automafield/script.sh
+
+echo "login,email,instance,instance name,oc,mission,level"
+
+for ct in 1 2 3
+do
+  [ $ct = 1 ] && oc=OCG
+  [ $ct = 2 ] && oc=OCB
+  [ $ct = 3 ] && oc=OCA
+
+  for i in `pct_all_instances $ct | grep -v SYNC_SERVER_LOCAL`
+  do
+	i2=`echo $i | sed 's/_[0-9]*_[0-9]*//' `
+	pct $ct $i -t -c "\\copy (select u.login,u.email,'$i2',i.name,'$oc',i.mission,i.level from res_users u, msf_instance i where u.active = 't' and i.instance = '$i2' and u.login != 'unifield4ever') to STDOUT with CSV "
+  done
+done
