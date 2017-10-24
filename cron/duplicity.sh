@@ -61,8 +61,8 @@ case $host in
 		# /backup/postgres gets dumps put into it
 		# via backup-postgres.sh
 		do="/etc /backup/postgres /root /opt \
-			/var/atlassian/jira-prod \
-			/home/production-dbs/update_received_to_send"
+			/home/jiraprod/atlassian/application-data \
+			/var/lib/dokuwiki/farm/wiki.unifield.org"
 		backupAll $do
 
 		# Exclude things from /home that we are not
