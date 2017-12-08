@@ -11,7 +11,7 @@ export PGHOST PGPORT
 
 msg() {
 	# Enable/Disable messages here
-	#echo $*
+	echo $*
 
 	# This colon makes this function not give a syntax
 	# error when the echo is commented. Stupid sh.
@@ -24,8 +24,7 @@ psql -F' ' -tAc "select regexp_replace(replace( datname, 'prod_', ''), '_[0-9|_]
     msg "----------------------------------------------------------------"
     msg "$(date) dump $INSTANCE_DB"
 
-    pg_dump -Fc -Z9 -v -t sync_client_update_received -t sync_client_update_to_send ${INSTANCE_DB} | zip > ${INSTANCE_NAME}.zip
+    pg_dump -Fc -Z9 -t sync_client_update_received -t sync_client_update_to_send ${INSTANCE_DB} | zip > $BACKUP_DIR/${INSTANCE_NAME}_$(date -I).zip
     
-
 done
 
