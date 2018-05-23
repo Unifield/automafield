@@ -72,7 +72,7 @@ case $host in
 			--exclude /home/production-dbs
 	;;
 	uf5-hw)
-		do="/root /etc /opt /usr/local"
+		do="/root /etc /opt /usr/local /home/testing/testfield/meta_features /home/testing/testfield/files"
 		backupAll $do
 	;;
 	uf5)
