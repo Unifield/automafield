@@ -38,7 +38,7 @@ echo "-------------------------------------------------"
 echo $csvFile
 
 #set query in variable
-query="SELECT * FROM public.f_get_uf_deployment_progress(null);"
+query="SELECT * FROM public.f_get_uf_deployment_progress(null) ORDER BY version, date;"
 
 #execute query in CSV file
 psql --pset footer -P format=unaligned -P fieldsep=\, -c "$query" ufdb > $csvFilePath/$csvFile
