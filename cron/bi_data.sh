@@ -2,6 +2,8 @@
 
 csvFilePath=/home/djg/bi
 
+######################################################################################
+
 csvFile="instance_check.csv"
 echo "-------------------------------------------------"
 echo $csvFile
@@ -29,6 +31,19 @@ order by y.date desc"
 #execute query in CSV file
 psql --pset footer -P format=unaligned -P fieldsep=\, -c "$query" ufdb > $csvFilePath/$csvFile
 
+######################################################################################
+
+csvFile="uf_deployment_progress.csv"
+echo "-------------------------------------------------"
+echo $csvFile
+
+#set query in variable
+query="SELECT * FROM public.f_get_uf_deployment_progress(null);"
+
+#execute query in CSV file
+psql --pset footer -P format=unaligned -P fieldsep=\, -c "$query" ufdb > $csvFilePath/$csvFile
+
+######################################################################################
 
 echo "Send all files to Sharepoint"
 for f in $csvFilePath/*.csv
