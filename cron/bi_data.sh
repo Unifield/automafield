@@ -25,7 +25,7 @@ LEFT JOIN (SELECT name as instance, db_name, date from ufdb.f_get_instances(null
 
 WHERE s.instance_state = 'validated'
 
-and (y.date is null OR y.date <= now() - interval '1 week')
+/*and (y.date is null OR y.date <= now() - interval '1 week')*/
 order by y.date desc"
 
 #execute query in CSV file

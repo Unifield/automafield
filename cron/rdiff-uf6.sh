@@ -1,9 +1,11 @@
 #!/bin/sh
 
-for i in postgres root etc opt jira-prod home update_received_to_send
+for i in postgres root etc opt jira-prod home
 do
         rdiff-backup --remove-older-than 30D --force -v2 backup::$i
 done
+
+#rdiff-backup --remove-older-than 10D --force -v2 backup::update_received_to_send
 
 rdiff-backup /backup/postgres backup::postgres
 rdiff-backup /root backup::root
@@ -22,5 +24,5 @@ rdiff-backup \
 	--exclude=/home/unifield_backups \
 	--exclude=/home/production-dbs \
 	/home backup::home
-rdiff-backup /home/production-dbs/update_received_to_send backup::update_received_to_send
+#rdiff-backup /home/production-dbs/update_received_to_send backup::update_received_to_send
 

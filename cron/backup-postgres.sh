@@ -7,7 +7,8 @@
 
 set -e
 
-DBLIST="jira_prod ops_archive ufdb jasperserver"
+#DBLIST="jiraprod ops_archive ufdb jasperserver"
+DBLIST="jiraprod ops_archive jasperserver"
 
 # - process the export of all databases in the list
 # 	- append the date and time on the filename
@@ -24,3 +25,7 @@ do
   su postgres -c "pg_dump -Fc ${dbname} | bzip2 -c" > ${dbname}_$(date '+%Y-%m-%d_%H:%M:%S').dump.bz2
 done
 
+# for ufdb DB we want to dump jira schema data and only structure for others
+su postgres -c "pg_dump -Fc ufdb --schema=jira | bzip2 -c" > ufdb_jira_$(date '+%Y-%m-%d_%H:%M:%S').dump.bz2
+
+su postgres -c "pg_dump -Fc ufdb --schema-only | bzip2 -c" > ufdb_schemaonly_$(date '+%Y-%m-%d_%H:%M:%S').dump.bz2
