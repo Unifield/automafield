@@ -10,7 +10,7 @@ echo $csvFile
 
 #set query in variable
 query="SELECT DISTINCT s.instance_name, s.instance_creation_date, s.instance_last_actvity_date, y.db_name, y.date AS dump_date, s.version AS sync_server_version, x.dump_version
-FROM dblink('host=127.0.0.1 port=5432 dbname=prod_SYNC_SERVER_LOCAL user=production-dbs', 'SELECT e.name AS instance_name, e.create_date AS instance_creation_date, e.state AS instance_state, max(a.datetime) AS instance_last_actvity_date, 
+FROM dblink('host=uf7.unifield.org port=5432 requiressl=1 sslcert=/etc/postgresql/9.5/main/clientcert/uf5-hw@unifield.org.cer sslkey=/etc/postgresql/9.5/main/clientcert/uf5-hw@unifield.org.key dbname=prod_SYNC_SERVER_LOCAL user=production-dbs', 'SELECT e.name AS instance_name, e.create_date AS instance_creation_date, e.state AS instance_state, max(a.datetime) AS instance_last_actvity_date, 
                CASE WHEN strpos(e.name, ''OCA'') > 0 THEN ''OCA'' WHEN strpos(e.name, ''OCB'') > 0 THEN ''OCB'' WHEN strpos(e.name, ''OCG'') > 0 THEN ''OCG'' END AS instance_oc,
                v.name AS version
                FROM sync_server_entity e
