@@ -4,6 +4,11 @@
 # when something goes wrong.
 
 dir=$HOME/logs/`date +%Y%m%d-%H%M`
+
+if [ $# -eq 2 ]; then
+    dir=$HOME/logs/$2_`date +%Y%m%d-%H%M`
+fi
+
 if [ -d $dir ]; then
     echo "Cannot overwrite log dir $dir."
     exit
@@ -11,12 +16,12 @@ fi
 mkdir -p $dir
 
 date > $dir/start.txt
-$* > $dir/stdout.txt 2>$dir/stderr.txt
+$1 > $dir/stdout.txt 2>$dir/stderr.txt
 rc=$?
 date > $dir/end.txt
 
 if [ $rc != 0 -o -s $dir/stderr.txt ]; then
-    echo "Command: $*"
+    echo "Command: $1"
     echo "  -> result code: $rc"
     echo
 
