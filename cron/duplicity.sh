@@ -62,7 +62,8 @@ case $host in
 		# via backup-postgres.sh
 		do="/etc /backup/postgres /root /opt \
 			/home/jiraprod/atlassian/application-data \
-			/var/lib/dokuwiki/farm/wiki.unifield.org"
+			/var/lib/dokuwiki/farm/wiki.unifield.org \
+			/var/www/html/wordpress "
 		backupAll $do
 
 		# Exclude things from /home that we are not

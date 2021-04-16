@@ -29,3 +29,5 @@ done
 su postgres -c "pg_dump -Fc ufdb --schema=jira | bzip2 -c" > ufdb_jira_$(date '+%Y-%m-%d_%H:%M:%S').dump.bz2
 
 su postgres -c "pg_dump -Fc ufdb --schema-only | bzip2 -c" > ufdb_schemaonly_$(date '+%Y-%m-%d_%H:%M:%S').dump.bz2
+
+mysqldump --defaults-file=/etc/mysql/debian.cnf uf_doc | bzip2 -c > uf_doc_mysql__$(date '+%Y-%m-%d_%H:%M:%S').sql.bz2

@@ -71,13 +71,13 @@ done <<< "$result"
 
 html_ocx_dbs="<th>ocX-dbs</th>"
 
-for oc in oca ocb ocp
+for oc in oca ocb ocg ocp
 do
 
-    last_log_folder_name=$(ssh root@uf7.unifield.org "cd /home/$oc-dbs/logs/; ls -td */ | head -1")			#most recent folder name
+    last_log_folder_name=$(ssh uf6@uf9.unifield.org "cd /home/$oc-dbs/logs/; ls -td */ | head -1")			#most recent folder name
     last_log_folder_date=$(date -d "$(echo $last_log_folder_name | sed -r 's/[-/]+/ /g')" +"%Y-%m-%d %H:%M")            #convert folder name to date
     last_log_folder_date_seconds=$(date -d "$last_log_folder_date" +"%s")						#convert date in seconds
-    comment_ocx_dbs=$(ssh root@uf7.unifield.org "grep 'ufload is done working' /home/$oc-dbs/logs/$last_log_folder_name/stderr.txt") #execute grep and get exit code
+    comment_ocx_dbs=$(ssh uf6@uf9.unifield.org "grep 'ufload is done working' /home/$oc-dbs/logs/$last_log_folder_name/stderr.txt") #execute grep and get exit code
 
     color=$color_red
     if [ -n "$comment_ocx_dbs" ] && [ "$last_log_folder_date_seconds" -ge "$last_sunday_date_seconds" ]; then 
@@ -87,9 +87,6 @@ do
     fi
 
     html_ocx_dbs="${html_ocx_dbs}<td style='background-color: $color;'>$last_log_folder_date</font><br />$comment_ocx_dbs</td>"
-    if [ "$oc" = 'ocb' ]; then
-         html_ocx_dbs="${html_ocx_dbs}<td/>"
-    fi
 
 done
 
@@ -100,11 +97,7 @@ html_ocxuf_dbs="<th>ocX-uf-dbs</th>"
 for oc in oca ocb ocg ocp
 do
 
-    if [ $oc = "ocg" ]; then
-        instances="N/A"
-        color=""
-    else
-        instances=$(ssh root@uf7.unifield.org "psql -qtAX -F, -d postgres -c \"SELECT array_to_string(array_agg( prod.datname), '<br />') 
+        instances=$(ssh uf6@uf9.unifield.org "psql -qtAX -F, -d postgres -c \"SELECT array_to_string(array_agg( prod.datname), '<br />') 
 FROM pg_database prod 
 LEFT JOIN pg_database ocxuf ON RIGHT(ocxuf.datname, LENGTH(ocxuf.datname) - 7) = RIGHT(prod.datname, LENGTH(prod.datname) - 5) AND ocxuf.datname LIKE 'oc_-uf\_%' 
 WHERE prod.datistemplate = false 
@@ -123,7 +116,6 @@ ORDER BY 1\"")
         if [ -z "$instances" ]; then
             color=$color_green;
         fi
-    fi
 
     html_ocxuf_dbs="${html_ocxuf_dbs}<td style='background-color: $color;'>$instances</font></td>"
 
@@ -138,10 +130,10 @@ html_prod_dbs="<th>prod-dbs</th>"
 
 for oc in oca ocb ocg ocp
 do
-    last_log_file_name=$(ssh root@uf7.unifield.org "cd /home/production-dbs/logs/; ls -td *-$oc | head -1")               #most recent file name
+    last_log_file_name=$(ssh uf6@uf9.unifield.org "cd /home/production-dbs/logs/; ls -td *-$oc | head -1")               #most recent file name
     last_log_file_date=$(date -d "$(echo $last_log_file_name | sed -r 's/[-/]+/ /g' | head -c-4)" +"%Y-%m-%d %H:%M")      #convert file name to date
     last_log_file_date_seconds=$(date -d "$last_log_file_date" +"%s")                                                     #convert date in seconds
-    comment_production_dbs=$(ssh root@uf7.unifield.org "grep 'ufload is done working' /home/production-dbs/logs/$last_log_file_name") #execute grep and get exit code
+    comment_production_dbs=$(ssh uf6@uf9.unifield.org "grep 'ufload is done working' /home/production-dbs/logs/$last_log_file_name") #execute grep and get exit code
 
     color=$color_red
     if [ -n "$comment_production_dbs" ] && [ "$last_log_file_date_seconds" -ge "$yesterday_date_seconds" ]; then
@@ -154,30 +146,9 @@ do
 done
 
 
-# ---------------------------------------------------------------- ocg-db
-
-# get in last stderr if "ufload is done working" in the file
-
-html_ocg_db="<th>ocg-db</th>"
-
-last_log_ocgdb_folder_name=$(ssh root@uf8.unifield.org "cd /home/ocg-db/logs/; ls -td */ | head -1")                     #most recent folder name
-last_log_ocgdb_folder_date=$(date -d "$(echo $last_log_ocgdb_folder_name | sed -r 's/[-/]+/ /g')" +"%Y-%m-%d %H:%M")            #convert folder name to date
-last_log_ocgdb_folder_date_seconds=$(date -d "$last_log_ocgdb_folder_date" +"%s")                                               #convert date in seconds
-comment_ocg_db=$(ssh root@uf8.unifield.org "grep 'ufload is done working' /home/ocg-db/logs/$last_log_ocgdb_folder_name/stderr.txt") #execute grep and get exit code
-
-color_ocg_db=$color_red
-if [ -n "$comment_ocg_db" ] && [ "$last_log_ocgdb_folder_date_seconds" -ge "$yesterday_date_seconds" ]; then
-    color_ocg_db=$color_green;
-elif  [ -z "$comment_ocg_db" ]; then
-    comment_ocg_db="(not terminated)"
-fi
-
-html_ocg_db="$html_ocg_db<td style='background-color: $color_green;'></td><td style='background-color: $color_green;'></td><td style='background-color: $color_ocg_db;'>$last_log_ocgdb_folder_date</font><br />$comment_ocg_db</td><td style='background-color: $color_green;'></td>"
-
-
 # ---------------------------------------------------------------- send email
 
-mail -s "Daily Alerts" -a 'Content-Type: text/html; charset=UTF-8' jfb@tempo-consulting.fr <<< \
+mail -s "Daily Alerts UF9" -a 'Content-Type: text/html; charset=UTF-8' jfb@tempo-consulting.fr <<< \
 "<table style='border: 1px solid black; padding: 5px;'>
     <tr>
         <th style='width: 200px;'></th><th style='width: 200px;'>OCA</th><th style='width: 200px;'>OCB</th><th style='width: 200px;'>OCG</th><th style='width: 200px;'>OCP</th>
