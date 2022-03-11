@@ -10,7 +10,7 @@ lettuce==0.2.21
 lxml==3.5.0
 OERPLib==0.8.4
 paramiko==2.0.1
-Pillow==3.2.0
+Pillow==9.0.1
 psycopg2==2.6.1
 pycrypto==2.6.1
 pycurl==7.43.0
