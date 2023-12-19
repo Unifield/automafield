@@ -9,7 +9,7 @@ ecdsa==0.13
 lettuce==0.2.21
 lxml==3.5.0
 OERPLib==0.8.4
-paramiko==2.0.1
+paramiko==3.4.0
 Pillow==3.2.0
 psycopg2==2.6.1
 pycrypto==2.6.1
