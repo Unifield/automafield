@@ -7,7 +7,6 @@ sudo -u postgres psql postgres -w -d ufdb -c "SELECT ufdb.f_stock_move(name) FRO
 sudo -u postgres psql postgres -w -d ufdb -c "SELECT ufdb.f_stock_move(name) FROM ufdb.f_get_instances(null) WHERE date >= '2020-01-01' AND oc='OCB' GROUP BY oc, name;"
 sudo -u postgres psql postgres -w -d ufdb -c "SELECT ufdb.f_stock_move_gen_move_inline();"
 
-
 # Create views
 sudo -u postgres psql postgres -w -d ufdb -c "SELECT ufdb.f_create_view('OCA');"
 sudo -u postgres psql postgres -w -d ufdb -c "SELECT ufdb.f_create_view('OCB');"

@@ -61,7 +61,6 @@ case $host in
 		# /backup/postgres gets dumps put into it
 		# via backup-postgres.sh
 		do="/etc /backup/postgres /root /opt \
-			/home/jiraprod/atlassian/application-data \
 			/var/lib/dokuwiki/farm/wiki.unifield.org \
 			/var/www/html/wordpress "
 		backupAll $do
@@ -70,6 +69,8 @@ case $host in
 		# authoratative for.
 		backupOne /home \
 			--exclude /home/unifield_backups \
+			--exclude /home/aiodev \
+			--exclude /home/dbexporter/dbexporter/output \
 			--exclude /home/production-dbs
 	;;
 	uf5-hw)

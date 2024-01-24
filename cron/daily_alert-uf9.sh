@@ -2,6 +2,7 @@
 
 last_sunday_date_seconds=$(date +"%s" -d "last sunday")
 last_friday_date_seconds=$(date +"%s" -d "last friday")
+last_saturday_date_seconds=$(date +"%s" -d "last saturday")
 yesterday_date_seconds=$(date +"%s" -d "yesterday")
 color_green="#b7edb4"
 color_red="#edbfb4"
@@ -23,10 +24,12 @@ do
 
     last_insert_date_seconds=$(date +"%s" -d "$last_insert_date")
 
-    if [[ ( "$oc" == "OCA" || "$oc" == "OCG" ) && "$last_insert_date_seconds" -ge "$last_friday_date_seconds" ]]; then
-        color=$color_green
-    elif [[ "$last_insert_date_seconds" -ge "$last_sunday_date_seconds" ]]; then
-        color=$color_green
+    #if [[ ( "$oc" == "OCA" || "$oc" == "OCG" ) && "$last_insert_date_seconds" -ge "$last_friday_date_seconds" ]]; then
+    #    color=$color_green
+    #elif [[ "$last_insert_date_seconds" -ge "$last_sunday_date_seconds" ]]; then
+    #    color=$color_green
+    if [[ "$last_insert_date_seconds" -ge "$last_saturday_date_seconds" ]]; then
+	    color=$color_green
     else
         color=$color_red
     fi
@@ -53,7 +56,7 @@ do
 
     last_insert_date_seconds=$(date +"%s" -d "$last_insert_date")
 
-    if [[ "$last_insert_date_seconds" -ge "$last_friday_date_seconds" ]]; then
+    if [[ "$last_insert_date_seconds" -ge "$last_saturday_date_seconds" ]]; then
         color=$color_green
     else
         color=$color_red
